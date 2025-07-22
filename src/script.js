@@ -2,25 +2,27 @@
 
 // Import the Overlapping Event Manager
 import ColumnObserver, {COLORS} from './event-manager.js';
-import * as domUtils from './helpers.js';
+import * as utils from './helpers.js';
 
 const NUM_OF_COL = 7;
 const NUM_OF_EVENTS = 6;
 
 const root = document.getElementById('root');
 
-const allEventsByClass = Array.from({length: NUM_OF_EVENTS})
-  .map((_, idx) => domUtils.createElement({
+const allEvents = Array.from({length: NUM_OF_EVENTS})
+  .map((_, idx) => utils.createElement({
   id: `event${idx+1}`,
   tag: 'div', className: 'event', 
   styles: {
     height: `${(idx + 2) * 20}px`,
-    backgroundColor: domUtils.generateColorFromNumber(idx),
+    backgroundColor: utils.generateColorFromNumber(idx),
   }}));
 const columns = Array.from({length: NUM_OF_COL})
-  .map((_, idx) => domUtils.createDiv({className: `box box${idx+1}`, id: `column${idx+1}`}));
-columns.forEach(el => domUtils.appendElement(root, el))
-allEventsByClass.forEach(el => domUtils.appendElement(root, el))
+  .map((_, idx) => utils.createDiv({className: `box box${idx+1}`, id: `column${idx+1}`}));
+
+// append cols and events
+columns.forEach(el => utils.appendElement(root, el))
+allEvents.forEach(el => utils.appendElement(root, el))
 
 const columnObserver = new ColumnObserver();
 
@@ -30,7 +32,7 @@ columnObserver.initializeColumns(columns);
 // register listeners
 document.addEventListener('DOMContentLoaded', handleColumnListeners);
 window.addEventListener('resize', handleWindowResize);
-allEventsByClass.forEach(el => attachDraggingHandlers(el));
+allEvents.forEach(el => attachDraggingHandlers(el));
 
 // Initialize overlapping groups
 columnObserver.refreshLayout();
@@ -52,7 +54,7 @@ function handleColumnListeners() {
 }
 
 function handleWindowResize() {
-  allEventsByClass.forEach(el => {
+  allEvents.forEach(el => {
     // Find which column the element is currently in
     const currentColumn = detectHoveredColumn(el);
     if (currentColumn) {
