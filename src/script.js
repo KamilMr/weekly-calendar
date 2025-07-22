@@ -4,13 +4,25 @@
 import ColumnObserver, {COLORS} from './event-manager.js';
 import * as domUtils from './helpers.js';
 
-const allEventsByClass = [];
-const columns = Array.from({length: 7}).map((_, idx) => domUtils.createDiv({className: `box box${idx+1}`, id: `column${idx+1}`}));
-console.log(columns)
-const columnObserver = new ColumnObserver();
+const NUM_OF_COL = 7;
+const NUM_OF_EVENTS = 6;
+
 const root = document.getElementById('root');
 
+const allEventsByClass = Array.from({length: NUM_OF_EVENTS})
+  .map((_, idx) => domUtils.createElement({
+  id: `event${idx+1}`,
+  tag: 'div', className: 'event', 
+  styles: {
+    height: `${(idx + 2) * 20}px`,
+    backgroundColor: domUtils.generateColorFromNumber(idx),
+  }}));
+const columns = Array.from({length: NUM_OF_COL})
+  .map((_, idx) => domUtils.createDiv({className: `box box${idx+1}`, id: `column${idx+1}`}));
 columns.forEach(el => domUtils.appendElement(root, el))
+allEventsByClass.forEach(el => domUtils.appendElement(root, el))
+
+const columnObserver = new ColumnObserver();
 
 // register columns in columnObserver
 columnObserver.initializeColumns(columns);

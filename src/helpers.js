@@ -23,4 +23,9 @@ const createElement = ({tag, className = '', styles = {}, id}) => {
   return element;
 };
 
-export {createElement, createDiv, removeElement, appendElement};
+const generateColorFromNumber = (number) => {
+  const hue = (number * 137.508) % 360;
+  return `hsl(${hue}, 70%, 60%)`;
+};
+
+export {createElement, createDiv, removeElement, appendElement, generateColorFromNumber};
