@@ -2,14 +2,15 @@
 
 // Import the Overlapping Event Manager
 import ColumnObserver, {COLORS} from './event-manager.js';
+import * as domUtils from './helpers.js';
 
-const allEventsByClass = document.querySelectorAll('.event');
-const rawColumns = document.querySelectorAll('.box');
-const columns = Array.from(rawColumns).filter(column =>
-  column.id.startsWith('column'),
-);
-
+const allEventsByClass = [];
+const columns = Array.from({length: 7}).map((_, idx) => domUtils.createDiv({className: `box box${idx+1}`, id: `column${idx+1}`}));
+console.log(columns)
 const columnObserver = new ColumnObserver();
+const root = document.getElementById('root');
+
+columns.forEach(el => domUtils.appendElement(root, el))
 
 // register columns in columnObserver
 columnObserver.initializeColumns(columns);
