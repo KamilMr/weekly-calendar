@@ -25,7 +25,7 @@ columnObserver.refreshLayout();
 
 // handlers of events
 function handleColumnListeners() {
-  rawColumns.forEach(column => {
+  columns.forEach(column => {
     column.addEventListener('mouseenter', function () {
       this.style.backgroundColor = COLORS.HOVER_BLUE;
       this.style.color = COLORS.DEFAULT;
@@ -49,8 +49,8 @@ function handleWindowResize() {
       columnObserver.fitElementToColumn(el, currentColumn);
     } else {
       // If not in any column, default to first column
-      columnObserver.centerDraggedElementInColumn(rawColumns[0], el);
-      columnObserver.fitElementToColumn(el, rawColumns[0]);
+      columnObserver.centerDraggedElementInColumn(columns[0], el);
+      columnObserver.fitElementToColumn(el, columns[0]);
     }
 
     // Update the drag function's initial positions for this element
@@ -168,7 +168,7 @@ function detectHoveredColumn(elmnt) {
   const draggedCenterX = draggedRect.left + draggedRect.width / 2;
 
   // Get all boxes except the dragged element itself
-  const columnBoxes = Array.from(rawColumns).filter(
+  const columnBoxes = Array.from(columns).filter(
     column => column.id !== elmnt.id,
   );
 
