@@ -1,0 +1,24 @@
+{
+  "name": "weekly-calendar",
+  "license": "ISC",
+  "author": "Kamil Mrowka",
+  "type": "module",
+  "main": "index.js",
+  "version": "1.0.0",
+  "description": "Weekly calendar",
+  "homepage": "https://github.com/KamilMr/weekly-calendar#readme",
+  "scripts": {
+    "dev": "live-server --port=3008 --open=/src/index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/KamilMr/weekly-calendar/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KamilMr/weekly-calendar.git"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}

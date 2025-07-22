@@ -1,0 +1,2 @@
+const appendElement = () => {};
+const createDiv = () => {};
