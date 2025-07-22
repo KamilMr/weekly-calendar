@@ -13,7 +13,7 @@ body {
 }
 
 /* Container */
-.root{
+.container{
     position: relative;
     display: flex;
     max-width: 1200px;
