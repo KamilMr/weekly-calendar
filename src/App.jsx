@@ -277,7 +277,7 @@ const App = () => {
                 height: '60px',
               }}
             >
-              Day {idx + 1}
+              {dateUtils.getDay(dateUtils.addDayToDate(new Date(), idx))}
             </div>
           ))}
         </div>
@@ -287,7 +287,7 @@ const App = () => {
           {Array.from({length: NUM_OF_COL}).map((_, idx) => (
             <div
               key={`column${idx + 1}`}
-              id={`column${idx + 1}`}
+              id={`column_${dateUtils.getYYYMMDD(dateUtils.addDayToDate(new Date(), idx))}`}
               className={`box box${idx + 1}`}
               ref={el => (columnRefs.current[idx] = el)}
             />
