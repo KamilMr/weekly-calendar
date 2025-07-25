@@ -45,7 +45,8 @@ export default class ColumnObserver {
     }
   }
 
-  removeEventFromColumn(eventId, columnId) {//NOTE col not exist in another impl
+  removeEventFromColumn(eventId, columnId) {
+    //NOTE col not exist in another impl
     this.columns[columnId] = this.columns[columnId].filter(
       event => event.id !== eventId,
     );
@@ -98,8 +99,7 @@ export default class ColumnObserver {
       Object.keys(columnGroups).forEach(groupId => {
         const eventIds = columnGroups[groupId].filter(id => id !== eId);
 
-        if (eventIds.length <= 1)
-          delete this.overlappedEvents[cId][groupId];
+        if (eventIds.length <= 1) delete this.overlappedEvents[cId][groupId];
         else this.overlappedEvents[cId][groupId] = eventIds;
       });
 
@@ -220,7 +220,9 @@ export default class ColumnObserver {
     });
   }
 
-  refreshLayout(columnIds = Object.keys(this.columns).filter(c => !c.startsWith('_'))) {
+  refreshLayout(
+    columnIds = Object.keys(this.columns).filter(c => !c.startsWith('_')),
+  ) {
     columnIds.forEach(columnId => {
       const eventsInColumn = this.columns[columnId];
       if (!eventsInColumn) return;
@@ -230,7 +232,10 @@ export default class ColumnObserver {
       eventsInColumn.forEach(event => {
         if (checkEvents.flat().includes(event.id)) return;
 
-        const overlaps = this._getOverlappingEventsFromColumn(event.id, columnId);
+        const overlaps = this._getOverlappingEventsFromColumn(
+          event.id,
+          columnId,
+        );
         if (overlaps) {
           const overlapss = overlaps.concat(event.id);
           // sort by left offset

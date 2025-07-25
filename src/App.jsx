@@ -1,16 +1,16 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {ColumnObserver, generateColorFromNumber, COLORS} from './engine';
 
-import './styles.css'
+import './styles.css';
 
 const NUM_OF_COL = 7;
 const NUM_OF_EVENTS = 5;
 const DRAG_THRESHOLD = 5;
 
-function DraggableEvent({ event, columnObserver, columns, onEventMove }) {
+function DraggableEvent({event, columnObserver, columns, onEventMove}) {
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [initialPosition, setInitialPosition] = useState({ left: 0, top: 0 });
+  const [dragStart, setDragStart] = useState({x: 0, y: 0});
+  const [initialPosition, setInitialPosition] = useState({left: 0, top: 0});
   const [hasMoved, setHasMoved] = useState(false);
   const [currentColumn, setCurrentColumn] = useState(null);
   const eventRef = useRef();
@@ -20,7 +20,7 @@ function DraggableEvent({ event, columnObserver, columns, onEventMove }) {
     if (eventRef.current) {
       setInitialPosition({
         left: eventRef.current.offsetLeft,
-        top: eventRef.current.offsetTop
+        top: eventRef.current.offsetTop,
       });
     }
   };
@@ -44,11 +44,17 @@ function DraggableEvent({ event, columnObserver, columns, onEventMove }) {
         const currentColumn = detectHoveredColumn(eventRef.current);
         if (currentColumn) {
           // Reposition and resize the element to fit the column
-          columnObserver.centerDraggedElementInColumn(currentColumn, eventRef.current);
+          columnObserver.centerDraggedElementInColumn(
+            currentColumn,
+            eventRef.current,
+          );
           columnObserver.fitElementToColumn(eventRef.current, currentColumn);
         } else {
           // If not in any column, default to first column
-          columnObserver.centerDraggedElementInColumn(columns[0], eventRef.current);
+          columnObserver.centerDraggedElementInColumn(
+            columns[0],
+            eventRef.current,
+          );
           columnObserver.fitElementToColumn(eventRef.current, columns[0]);
         }
 
@@ -61,7 +67,7 @@ function DraggableEvent({ event, columnObserver, columns, onEventMove }) {
     return () => window.removeEventListener('resize', handleWindowResize);
   }, [columnObserver, columns]);
 
-  const detectHoveredColumn = (element) => {
+  const detectHoveredColumn = element => {
     const draggedRect = element.getBoundingClientRect();
     const draggedCenterX = draggedRect.left + draggedRect.width / 2;
 
@@ -80,24 +86,24 @@ function DraggableEvent({ event, columnObserver, columns, onEventMove }) {
     return null;
   };
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = e => {
     e.preventDefault();
     setIsDragging(true);
     setHasMoved(false);
-    setDragStart({ x: e.clientX, y: e.clientY });
+    setDragStart({x: e.clientX, y: e.clientY});
     setInitialPosition({
       left: eventRef.current.offsetLeft,
-      top: eventRef.current.offsetTop
+      top: eventRef.current.offsetTop,
     });
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = e => {
     if (!isDragging) return;
 
     const deltaX = e.clientX - dragStart.x;
     const deltaY = e.clientY - dragStart.y;
     const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    
+
     if (totalMovement > DRAG_THRESHOLD) {
       setHasMoved(true);
     }
@@ -109,25 +115,26 @@ function DraggableEvent({ event, columnObserver, columns, onEventMove }) {
 
     const hoveredColumn = detectHoveredColumn(eventRef.current);
     setCurrentColumn(hoveredColumn);
-    
+
     columns.forEach(column => {
-      column.style.backgroundColor = column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
+      column.style.backgroundColor =
+        column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
     });
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    
+
     if (currentColumn && hasMoved && columnObserver) {
       const columnCameFrom = columnObserver.getColIdEvIsLoc(event.id);
       columnObserver.addEventToColumn(eventRef.current, currentColumn.id);
       const toUpdate = [currentColumn.id];
       if (currentColumn.id !== columnCameFrom) toUpdate.push(columnCameFrom);
       columnObserver.refreshLayout(toUpdate);
-      
+
       setInitialPosition({
         left: eventRef.current.offsetLeft,
-        top: eventRef.current.offsetTop
+        top: eventRef.current.offsetTop,
       });
     } else if (!hasMoved) {
       eventRef.current.style.left = initialPosition.left + 'px';
@@ -160,15 +167,14 @@ function DraggableEvent({ event, columnObserver, columns, onEventMove }) {
         height: `${event.height}px`,
         backgroundColor: event.backgroundColor,
         width: event.width,
-        cursor: isDragging ? 'grabbing' : 'grab'
+        cursor: isDragging ? 'grabbing' : 'grab',
       }}
       onMouseDown={handleMouseDown}
-    >
-    </div>
+    ></div>
   );
 }
 
-const createInitialEvents = (num) => {
+const createInitialEvents = num => {
   return Array.from({length: num}, (_, idx) => ({
     id: `event${idx + 1}`,
     height: (idx + 2) * 20,
@@ -185,7 +191,7 @@ const App = () => {
 
   // Initialize ColumnObserver and columns
   useEffect(() => {
-    if (columnRefs.current.length !== NUM_OF_COL) return; 
+    if (columnRefs.current.length !== NUM_OF_COL) return;
     if (columnObserverRef.current) return;
 
     columnObserverRef.current = new ColumnObserver();
@@ -203,7 +209,10 @@ const App = () => {
       const eventElement = document.getElementById(event.id);
       if (eventElement && columnRefs.current[0]) {
         // Add event to first column
-        columnObserverRef.current.addEventToColumn(eventElement, columnRefs.current[0].id);
+        columnObserverRef.current.addEventToColumn(
+          eventElement,
+          columnRefs.current[0].id,
+        );
       }
     });
 
@@ -219,7 +228,7 @@ const App = () => {
           column.style.backgroundColor = COLORS.HOVER_BLUE;
           column.style.color = COLORS.DEFAULT;
         };
-        
+
         const handleMouseLeave = () => {
           column.style.backgroundColor = COLORS.DEFAULT;
           column.style.color = COLORS.DEFAULT;
@@ -253,7 +262,10 @@ const App = () => {
 
   return (
     <div className="container">
-      <div className="container" style={{display: 'flex', flexDirection: 'column'}}>
+      <div
+        className="container"
+        style={{display: 'flex', flexDirection: 'column'}}
+      >
         {/* Day Headers */}
         <div style={{display: 'flex'}}>
           {Array.from({length: NUM_OF_COL}).map((_, idx) => (
@@ -272,7 +284,7 @@ const App = () => {
             </div>
           ))}
         </div>
-        
+
         {/* Calendar Columns */}
         <div className="container" style={{position: 'relative'}}>
           {Array.from({length: NUM_OF_COL}).map((_, idx) => (
@@ -280,12 +292,12 @@ const App = () => {
               key={`column${idx + 1}`}
               id={`column${idx + 1}`}
               className={`box box${idx + 1}`}
-              ref={el => columnRefs.current[idx] = el}
+              ref={el => (columnRefs.current[idx] = el)}
             />
           ))}
-          
+
           {/* Events */}
-          {events.map((event) => (
+          {events.map(event => (
             <DraggableEvent
               key={event.id}
               event={event}
@@ -297,6 +309,6 @@ const App = () => {
       </div>
     </div>
   );
-}
+};
 
 export default App;

@@ -4,7 +4,9 @@
   "author": "Kamil Mrowka",
   "type": "module",
   "main": "dist/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "version": "1.0.0",
   "description": "Weekly calendar",
   "homepage": "https://github.com/KamilMr/weekly-calendar#readme",
@@ -12,7 +14,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "bugs": {
     "url": "https://github.com/KamilMr/weekly-calendar/issues"
@@ -22,7 +26,8 @@
     "url": "git+https://github.com/KamilMr/weekly-calendar.git"
   },
   "devDependencies": {
-    "live-server": "^1.2.2"
+    "live-server": "^1.2.2",
+    "prettier": "^3.6.2"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.7.0",
