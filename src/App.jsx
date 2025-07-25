@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 
 import {ColumnObserver, COLORS} from './engine';
-import {generateColorFromNumber} from './helpers';
+import {createInitialEvents, dateUtils} from './helpers';
 
 import './styles.css';
 
@@ -9,7 +9,7 @@ const NUM_OF_COL = 7;
 const NUM_OF_EVENTS = 5;
 const DRAG_THRESHOLD = 5;
 
-function DraggableEvent({event, columnObserver, columns, onEventMove}) {
+const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({x: 0, y: 0});
   const [initialPosition, setInitialPosition] = useState({left: 0, top: 0});
@@ -170,19 +170,11 @@ function DraggableEvent({event, columnObserver, columns, onEventMove}) {
         backgroundColor: event.backgroundColor,
         width: event.width,
         cursor: isDragging ? 'grabbing' : 'grab',
+        top: event.top,
       }}
       onMouseDown={handleMouseDown}
     ></div>
   );
-}
-
-const createInitialEvents = num => {
-  return Array.from({length: num}, (_, idx) => ({
-    id: `event${idx + 1}`,
-    height: (idx + 2) * 20,
-    width: 130,
-    backgroundColor: generateColorFromNumber(idx),
-  }));
 };
 
 const App = () => {
@@ -190,7 +182,6 @@ const App = () => {
   const [columns, setColumns] = useState([]);
   const columnObserverRef = useRef();
   const columnRefs = useRef([]);
-
   // Initialize ColumnObserver and columns
   useEffect(() => {
     if (columnRefs.current.length !== NUM_OF_COL) return;
