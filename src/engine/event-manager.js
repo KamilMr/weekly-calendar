@@ -43,8 +43,6 @@ export default class ColumnObserver {
       const allOverlappingIds = [...overlappingIds, event.id];
       this._addToOverlapped(columnId, allOverlappingIds);
     }
-
-    console.log('When added: ', JSON.stringify(this.columns, null, 2));
   }
 
   removeEventFromColumn(eventId, columnId) {//NOTE col not exist in another impl
