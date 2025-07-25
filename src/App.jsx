@@ -1,5 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {ColumnObserver, generateColorFromNumber, COLORS} from './engine';
+
+import {ColumnObserver, COLORS} from './engine';
+import {generateColorFromNumber} from './helpers';
 
 import './styles.css';
 
