@@ -197,14 +197,18 @@ const App = () => {
   useEffect(() => {
     if (!columnObserverRef.current || columns.length === 0) return;
 
-    // Add each event to the first column initially and position them
+    // Add each event to the matching column based on its date
     events.forEach((event, idx) => {
       const eventElement = document.getElementById(event.id);
-      if (eventElement && columnRefs.current[0]) {
-        // Add event to first column
+      const eventDateString = dateUtils.getYYYMMDD(event.date);
+      const targetColumnId = `column_${eventDateString}`;
+      const targetColumn = document.getElementById(targetColumnId);
+      
+      if (eventElement && targetColumn) {
+        // Add event to matching column based on date
         columnObserverRef.current.addEventToColumn(
           eventElement,
-          columnRefs.current[0].id,
+          targetColumnId,
         );
       }
     });
