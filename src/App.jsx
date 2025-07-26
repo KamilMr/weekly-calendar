@@ -38,37 +38,6 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     }
   });
 
-  // Handle window resize - equivalent to the original handleWindowResize functionality
-  useEffect(() => {
-    const handleWindowResize = () => {
-      if (eventRef.current && columnObserver && columns.length > 0) {
-        // Find which column the element is currently in
-        const currentColumn = detectHoveredColumn(eventRef.current);
-        if (currentColumn) {
-          // Reposition and resize the element to fit the column
-          columnObserver.centerDraggedElementInColumn(
-            currentColumn,
-            eventRef.current,
-          );
-          columnObserver.fitElementToColumn(eventRef.current, currentColumn);
-        } else {
-          // If not in any column, default to first column
-          columnObserver.centerDraggedElementInColumn(
-            columns[0],
-            eventRef.current,
-          );
-          columnObserver.fitElementToColumn(eventRef.current, columns[0]);
-        }
-
-        // Update the initial positions for this element
-        updateInitialPositions();
-      }
-    };
-
-    window.addEventListener('resize', handleWindowResize);
-    return () => window.removeEventListener('resize', handleWindowResize);
-  }, [columnObserver, columns]);
-
   const detectHoveredColumn = element => {
     const draggedRect = element.getBoundingClientRect();
     const draggedCenterX = draggedRect.left + draggedRect.width / 2;
