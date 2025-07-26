@@ -46,7 +46,6 @@ export default class ColumnObserver {
       const allOverlappingIds = [...overlappingIds, event.id];
       this._addToOverlapped(columnId, allOverlappingIds);
     }
-
   }
 
   removeEventFromColumn(eventId, columnId) {
@@ -208,20 +207,15 @@ export default class ColumnObserver {
     return column;
   }
 
-  _updateWidthOfElements(elements, column) {
+  _calculateElementLayout(elements, columnWidth, columnOffset) {
     const numberOfElements = elements.length;
-    const columnWidth = column.getBoundingClientRect().width;
-    const columnOffset = column.offsetLeft;
+    const elementWidth = columnWidth / numberOfElements;
 
-    // calculate left offset of elements
-    elements.forEach((id, idx) => {
-      const elementDom = this.getEventById(id).event;
-      const offset = idx * (columnWidth / numberOfElements) + columnOffset;
-      elementDom.style.width = columnWidth / numberOfElements + 'px';
-      elementDom.style.left = offset + 'px';
-
-      elementDom._dragUpdateInitialPositions();
-    });
+    return elements.map((id, idx) => ({
+      id,
+      width: elementWidth,
+      left: idx * elementWidth + columnOffset,
+    }));
   }
 
   _doEventsOverlap(eventId1, eventId2) {
@@ -236,9 +230,13 @@ export default class ColumnObserver {
     return !(event1.bottom <= event2.top || event1.top >= event2.bottom);
   }
 
-  refreshLayout(
+  calculateLayout(
     columnIds = Object.keys(this.columns).filter(c => !c.startsWith('_')),
+    columnWidths = {},
+    columnOffsets = {},
   ) {
+    const layoutResults = {};
+
     columnIds.forEach(columnId => {
       const eventsInColumn = this.columns[columnId];
       if (!eventsInColumn) return;
@@ -256,32 +254,32 @@ export default class ColumnObserver {
           const overlapss = overlaps.concat(event.id);
           // sort by left offset
           const sorted = overlapss.sort(
-            (a, b) =>
-              this.getEventById(a).event.getBoundingClientRect().left -
-              this.getEventById(b).event.getBoundingClientRect().left,
+            (a, b) => this.getEventById(a).left - this.getEventById(b).left,
           );
           checkEvents.push(sorted);
         } else checkEvents.push([event.id]);
       });
 
       checkEvents.forEach(gr => {
-        // Find the column element by ID
-        const columnElement = document.querySelector(`#${columnId}`);
-        if (columnElement) {
-          this._updateWidthOfElements(gr, columnElement);
-        }
+        const columnWidth = columnWidths[columnId] || 130; // default width
+        const columnOffset = columnOffsets[columnId] || 0; // default offset
+        const elementLayouts = this._calculateElementLayout(
+          gr,
+          columnWidth,
+          columnOffset,
+        );
+
+        elementLayouts.forEach(layout => {
+          layoutResults[layout.id] = {
+            width: layout.width,
+            left: layout.left,
+            columnId: columnId,
+          };
+        });
       });
     });
-  }
 
-  _centerDraggedElementInColumn(column, element) {
-    const left = column.offsetLeft + 'px';
-    element.style.left = left;
-  }
-
-  _fitElementToColumn(element, column) {
-    const columnWidth = column.getBoundingClientRect().width;
-    element.style.width = columnWidth + 'px';
+    return layoutResults;
   }
 
   initializeColumns(columns) {
@@ -289,18 +287,8 @@ export default class ColumnObserver {
   }
 
   // Public method for external access (like original oem)
-  centerDraggedElementInColumn(column, element) {
-    return this._centerDraggedElementInColumn(column, element);
-  }
-
-  // Public method for external access (like original oem)
-  fitElementToColumn(element, column) {
-    return this._fitElementToColumn(element, column);
-  }
-
-  // Public method for external access (like original oem)
-  updateWidthOfElements(elements, column) {
-    return this._updateWidthOfElements(elements, column);
+  calculateElementLayout(elements, columnWidth, columnOffset) {
+    return this._calculateElementLayout(elements, columnWidth, columnOffset);
   }
 }
 export {COLORS};
