@@ -182,6 +182,7 @@ const App = () => {
   const [columns, setColumns] = useState([]);
   const columnObserverRef = useRef();
   const columnRefs = useRef([]);
+
   // Initialize ColumnObserver and columns
   useEffect(() => {
     if (columnRefs.current.length !== NUM_OF_COL) return;
@@ -271,10 +272,12 @@ const App = () => {
               id={`header${idx + 1}`}
               className="box"
               style={{
-                textAlign: 'center',
+                textAlign: 'right',
+                paddingRight: 2,
                 fontWeight: 'bold',
                 width: '130px',
-                height: '60px',
+                height: '30px',
+                borderBottom: 'none',
               }}
             >
               {dateUtils.getDay(dateUtils.addDayToDate(new Date(), idx))}
