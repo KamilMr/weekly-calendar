@@ -146,4 +146,3 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
 };
 
 export default DraggableEvent;
-

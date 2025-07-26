@@ -35,19 +35,19 @@ describe('ColumnObserver', () => {
           bottom: 200,
           left: 10,
           width: 120,
-          height: 100
-        })
+          height: 100,
+        }),
       };
 
       const mockEvent2 = {
-        id: 'event2', 
+        id: 'event2',
         getBoundingClientRect: () => ({
           top: 150,
           bottom: 250,
           left: 10,
           width: 120,
-          height: 100
-        })
+          height: 100,
+        }),
       };
 
       const mockEvent3 = {
@@ -57,8 +57,8 @@ describe('ColumnObserver', () => {
           bottom: 280,
           left: 10,
           width: 120,
-          height: 100
-        })
+          height: 100,
+        }),
       };
 
       // Add first two overlapping events
@@ -70,7 +70,7 @@ describe('ColumnObserver', () => {
 
       // Verify all events are in the column
       expect(observer.columns['column_2025-07-26']).toHaveLength(3);
-      console.log(observer.columns)
+      console.log(observer.columns);
 
       // Verify overlapping events are detected
       const overlappingGroups = observer.getAllOverlappedGroups();

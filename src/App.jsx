@@ -50,6 +50,44 @@ const App = () => {
     refreshLayout();
   }, [columns, events]);
 
+  // Add column hover listeners
+  useEffect(() => {
+    columns.forEach(column => {
+      if (column) {
+        const handleMouseEnter = () => {
+          column.style.backgroundColor = COLORS.HOVER_BLUE;
+          column.style.color = COLORS.DEFAULT;
+        };
+
+        const handleMouseLeave = () => {
+          column.style.backgroundColor = COLORS.DEFAULT;
+          column.style.color = COLORS.DEFAULT;
+        };
+
+        column.addEventListener('mouseenter', handleMouseEnter);
+        column.addEventListener('mouseleave', handleMouseLeave);
+
+        return () => {
+          column.removeEventListener('mouseenter', handleMouseEnter);
+          column.removeEventListener('mouseleave', handleMouseLeave);
+        };
+      }
+    });
+  }, [columns]);
+
+  // Global window resize handler to refresh layout after all events are processed
+  useEffect(() => {
+    const handleGlobalResize = () => {
+      // Small delay to ensure all individual event resize handlers have completed
+      setTimeout(() => {
+        refreshLayout();
+      }, 0);
+    };
+
+    window.addEventListener('resize', handleGlobalResize);
+    return () => window.removeEventListener('resize', handleGlobalResize);
+  }, []);
+
   // Apply layout calculations to DOM elements
   const applyLayoutToDOM = layoutResults => {
     Object.entries(layoutResults).forEach(([eventId, layout]) => {
@@ -91,44 +129,6 @@ const App = () => {
     // Apply to DOM
     applyLayoutToDOM(layoutResults);
   };
-
-  // Add column hover listeners
-  useEffect(() => {
-    columns.forEach(column => {
-      if (column) {
-        const handleMouseEnter = () => {
-          column.style.backgroundColor = COLORS.HOVER_BLUE;
-          column.style.color = COLORS.DEFAULT;
-        };
-
-        const handleMouseLeave = () => {
-          column.style.backgroundColor = COLORS.DEFAULT;
-          column.style.color = COLORS.DEFAULT;
-        };
-
-        column.addEventListener('mouseenter', handleMouseEnter);
-        column.addEventListener('mouseleave', handleMouseLeave);
-
-        return () => {
-          column.removeEventListener('mouseenter', handleMouseEnter);
-          column.removeEventListener('mouseleave', handleMouseLeave);
-        };
-      }
-    });
-  }, [columns]);
-
-  // Global window resize handler to refresh layout after all events are processed
-  useEffect(() => {
-    const handleGlobalResize = () => {
-      // Small delay to ensure all individual event resize handlers have completed
-      setTimeout(() => {
-        refreshLayout();
-      }, 0);
-    };
-
-    window.addEventListener('resize', handleGlobalResize);
-    return () => window.removeEventListener('resize', handleGlobalResize);
-  }, []);
 
   return (
     <div className="container">
