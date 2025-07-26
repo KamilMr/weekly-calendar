@@ -27,9 +27,12 @@ export default class ColumnObserver {
     const rect = event.getBoundingClientRect();
     this.removeEventFromColumns(event);
     this.columns[columnId].push({
+      id: event.id,
       top: rect.top,
       bottom: rect.bottom,
-      id: event.id,
+      width: rect.width,
+      height: rect.height,
+      left: rect.left,
       event: event,
     });
 
@@ -43,6 +46,7 @@ export default class ColumnObserver {
       const allOverlappingIds = [...overlappingIds, event.id];
       this._addToOverlapped(columnId, allOverlappingIds);
     }
+
   }
 
   removeEventFromColumn(eventId, columnId) {
