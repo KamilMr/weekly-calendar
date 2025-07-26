@@ -7,10 +7,13 @@ import DraggableEvent from './DraggableEvent';
 import './styles.css';
 
 const NUM_OF_COL = 7;
-const NUM_OF_EVENTS = 5;
+const NUM_OF_EVENTS = 2;
 
-const App = () => {
-  const [events, setEvents] = useState(createInitialEvents(NUM_OF_EVENTS));
+const App = ({
+  events = createInitialEvents(NUM_OF_EVENTS),
+  onClick = () => {},
+  onGrabEnd = () => {},
+}) => {
   const [columns, setColumns] = useState([]);
   const columnObserverRef = useRef();
   const columnRefs = useRef([]);
@@ -33,14 +36,25 @@ const App = () => {
     // Add each event to the matching column based on its date
     events.forEach((event, idx) => {
       const eventElement = document.getElementById(event.id);
-      const eventDateString = dateUtils.getYYYMMDD(event.date);
+      const eventDateString = dateUtils.getYYYMMDD(event.startDate);
       const targetColumnId = `column_${eventDateString}`;
       const targetColumn = document.getElementById(targetColumnId);
 
       if (eventElement && targetColumn) {
+        // Get rect data from DOM element and combine with event data
+        const rect = eventElement.getBoundingClientRect();
+        const eventData = {
+          ...event,
+          top: rect.top,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+          left: rect.left,
+        };
+        
         // Add event to matching column based on date
         columnObserverRef.current.addEventToColumn(
-          eventElement,
+          eventData,
           targetColumnId,
         );
       }

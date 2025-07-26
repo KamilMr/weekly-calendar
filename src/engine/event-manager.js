@@ -16,7 +16,11 @@ export default class ColumnObserver {
   }
 
   _addColumn(column) {
-    this.columns[column.id] = [];
+    this.columns[column.id] = {
+      events: [],
+      _width: column.getBoundingClientRect().width || 130,
+      _element: column
+    };
   }
 
   _removeColumn(columnId) {
@@ -50,7 +54,7 @@ export default class ColumnObserver {
 
   removeEventFromColumn(eventId, columnId) {
     //NOTE col not exist in another impl
-    this.columns[columnId] = this.columns[columnId].filter(
+    this.columns[columnId].events = this.columns[columnId].events.filter(
       event => event.id !== eventId,
     );
 
@@ -63,7 +67,7 @@ export default class ColumnObserver {
     Object.keys(this.columns)
       .filter(key => key.startsWith('column'))
       .forEach(key => {
-        const columnEvents = this.columns[key];
+        const columnEvents = this.columns[key].events;
         if (columnEvents) {
           const eventIndex = columnEvents.findIndex(e => e.id === event.id);
           if (eventIndex !== -1) {
@@ -112,11 +116,21 @@ export default class ColumnObserver {
   }
 
   getColumnEvents(columnId) {
+    return this.columns[columnId].events;
+  }
+
+  getColumnMetadata(columnId) {
     return this.columns[columnId];
   }
 
+  updateColumnWidth(columnId, width) {
+    if (this.columns[columnId]) {
+      this.columns[columnId]._width = width;
+    }
+  }
+
   _getOverlappingEventsFromColumn(eId, columnId) {
-    const columnEvents = this.columns[columnId] || [];
+    const columnEvents = this.columns[columnId]?.events || [];
     const targetEvent = columnEvents.find(e => e.id === eId);
 
     if (!targetEvent) return undefined;
@@ -193,6 +207,7 @@ export default class ColumnObserver {
 
   getEventById(eventId) {
     return Object.values(this.columns)
+      .map(column => column.events)
       .flat()
       .find(e => e.id === eventId);
   }
@@ -200,8 +215,7 @@ export default class ColumnObserver {
   getColIdEvIsLoc(eId) {
     const columns = Object.keys(this.columns);
     const column = columns.find(c =>
-      Object.values(this.columns[c] || [])
-        .flat()
+      (this.columns[c]?.events || [])
         .some(ev => ev.id === eId),
     );
     return column;
@@ -238,7 +252,7 @@ export default class ColumnObserver {
     const layoutResults = {};
 
     columnIds.forEach(columnId => {
-      const eventsInColumn = this.columns[columnId];
+      const eventsInColumn = this.columns[columnId]?.events;
       if (!eventsInColumn) return;
 
       // get overlapped events
