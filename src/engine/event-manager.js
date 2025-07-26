@@ -15,11 +15,11 @@ export default class ColumnObserver {
     this.overlappedEvents = {};
   }
 
-  addColumn(column) {
+  _addColumn(column) {
     this.columns[column.id] = [];
   }
 
-  removeColumn(columnId) {
+  _removeColumn(columnId) {
     delete this.columns[columnId];
   }
 
@@ -283,7 +283,7 @@ export default class ColumnObserver {
   }
 
   initializeColumns(columns) {
-    columns.forEach(column => (this.columns[column.id] = []));
+    columns.forEach(column => this._addColumn(column));
   }
 
   // Public method for external access (like original oem)
