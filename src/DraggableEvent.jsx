@@ -92,7 +92,19 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
 
     if (currentColumn && hasMoved && columnObserver) {
       const columnCameFrom = columnObserver.getColIdEvIsLoc(event.id);
-      columnObserver.addEventToColumn(eventRef.current, currentColumn.id);
+      
+      // Get rect data from DOM element and combine with event data
+      const rect = eventRef.current.getBoundingClientRect();
+      const eventData = {
+        ...event,
+        top: rect.top,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+        left: rect.left,
+      };
+      
+      columnObserver.addEventToColumn(eventData, currentColumn.id);
 
       // Trigger layout recalculation in parent component
       if (onEventMove) {

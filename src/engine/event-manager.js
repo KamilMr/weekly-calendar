@@ -27,27 +27,54 @@ export default class ColumnObserver {
     delete this.columns[columnId];
   }
 
-  addEventToColumn(event, columnId) {
-    const rect = event.getBoundingClientRect();
-    this.removeEventFromColumns(event);
-    this.columns[columnId].push({
-      id: event.id,
-      top: rect.top,
-      bottom: rect.bottom,
-      width: rect.width,
-      height: rect.height,
-      left: rect.left,
-      event: event,
+  _translateDateToCoord({event: {startDate, endDate}}) {
+    console.log(startDate)
+    // Convert date/time to pixel coordinates
+    // Assumes startDate and endDate are Date objects or ISO strings
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Calculate duration in milliseconds
+    const duration = end.getTime() - start.getTime();
+    
+    // Convert to hours for easier calculation
+    const durationHours = duration / (1000 * 60 * 60);
+    
+    // Assume 1 hour = 60px (configurable)
+    const pixelsPerHour = 60;
+    const height = Math.max(durationHours * pixelsPerHour, 20); // minimum 20px height
+    
+    // Calculate top position based on start time
+    // Assume day starts at 00:00, so get hour + minute offset
+    const startHour = start.getHours() + start.getMinutes() / 60;
+    const top = startHour * pixelsPerHour;
+    
+    return {top, height};
+  }
+
+  addEventToColumn(eventData, columnId) {
+    // eventData should be a plain object with: {id, top, bottom, width, height, left, startDate, endDate, ...}
+    this.removeEventFromColumns(eventData);
+    this.columns[columnId].events.push({
+      id: eventData.id,
+      top: eventData.top,
+      bottom: eventData.bottom,
+      width: eventData.width,
+      height: eventData.height,
+      left: eventData.left,
+      startDate: eventData.startDate,
+      endDate: eventData.endDate,
+      ...eventData, // spread any additional properties
     });
 
     // check for overlaps and get wrapper dimensions if needed
     const overlappingIds = this._getOverlappingEventsFromColumn(
-      event.id,
+      eventData.id,
       columnId,
     );
     if (overlappingIds) {
       // Add the current event to the overlapping group
-      const allOverlappingIds = [...overlappingIds, event.id];
+      const allOverlappingIds = [...overlappingIds, eventData.id];
       this._addToOverlapped(columnId, allOverlappingIds);
     }
   }
@@ -63,18 +90,19 @@ export default class ColumnObserver {
   }
 
   // Public method to remove event from all columns (like original oem)
-  removeEventFromColumns(event) {
+  removeEventFromColumns(eventData) {
+    const eventId = typeof eventData === 'object' ? eventData.id : eventData;
     Object.keys(this.columns)
       .filter(key => key.startsWith('column'))
       .forEach(key => {
         const columnEvents = this.columns[key].events;
         if (columnEvents) {
-          const eventIndex = columnEvents.findIndex(e => e.id === event.id);
+          const eventIndex = columnEvents.findIndex(e => e.id === eventId);
           if (eventIndex !== -1) {
             // Remove from overlap management before removing from column
-            this.removeFromOverlapped(event.id);
+            this.removeFromOverlapped(eventId);
             // Remove from column events
-            this.columns[key] = columnEvents.filter(e => e.id !== event.id);
+            this.columns[key].events = columnEvents.filter(e => e.id !== eventId);
           }
         }
       });
