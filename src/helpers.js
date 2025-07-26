@@ -10,7 +10,7 @@ const createInitialEvents = num => {
     width: 130,
     top: idx * 10,
     backgroundColor: generateColorFromNumber(idx),
-    date: date.addDayToDate(new Date(), idx)
+    date: date.addDayToDate(new Date(), idx),
   }));
 };
 

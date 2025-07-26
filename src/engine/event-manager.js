@@ -222,12 +222,12 @@ export default class ColumnObserver {
 
   _doEventsOverlap(eventId1, eventId2) {
     if (eventId1 === eventId2) return true;
-    
+
     const event1 = this.getEventById(eventId1);
     const event2 = this.getEventById(eventId2);
-    
+
     if (!event1 || !event2) return false;
-    
+
     // Check if events overlap vertically
     return !(event1.bottom <= event2.top || event1.top >= event2.bottom);
   }

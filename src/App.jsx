@@ -205,7 +205,7 @@ const App = () => {
       const eventDateString = dateUtils.getYYYMMDD(event.date);
       const targetColumnId = `column_${eventDateString}`;
       const targetColumn = document.getElementById(targetColumnId);
-      
+
       if (eventElement && targetColumn) {
         // Add event to matching column based on date
         columnObserverRef.current.addEventToColumn(
