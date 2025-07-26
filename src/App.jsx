@@ -145,7 +145,9 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         zIndex: isDragging ? 1000 : 'auto',
       }}
       onMouseDown={handleMouseDown}
-    ></div>
+    >
+      {event.id}
+    </div>
   );
 };
 
