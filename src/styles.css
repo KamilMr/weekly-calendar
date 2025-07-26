@@ -23,43 +23,15 @@ body {
 }
 
 .box {
-  border: 1px solid #000;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   width: 130px;
   container-name: main-container;
+  border-top: none;
   container-type: inline-size;
-}
-
-.box1 {
-  border: 1px solid #000;
-}
-
-.box2 {
-  border: 1px solid #2bc413;
-}
-
-.box3 {
-  border: 1px solid #2c0c93;
-}
-
-.box4 {
-  border: 1px solid #930c0c;
-}
-
-.box5 {
-  border: 1px solid #e67e22;
-}
-
-.box6 {
-  border: 1px solid #0c9393;
-}
-
-.box7 {
-  border: 1px solid #f39c12;
 }
 
 .event {
   position: absolute;
   cursor: grab;
   background-color: #930c0c;
-  width: 130px;
 }
