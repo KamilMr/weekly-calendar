@@ -7,12 +7,37 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({x: 0, y: 0});
   const [initialPosition, setInitialPosition] = useState({left: 0, top: 0});
+  const [dragging, setDragging] = useState({top: 0, left: 0});
   const [hasMoved, setHasMoved] = useState(false);
   const [currentColumn, setCurrentColumn] = useState(null);
   const eventRef = useRef();
 
+  // Function to update React state from engine data
+  const updateEventState = eventData => {
+    setDragging({
+      left: eventData.left + 'px',
+      top: eventData.top + 'px',
+      width: eventData.width + 'px',
+      height: eventData.height + 'px',
+    });
+    setInitialPosition({
+      left: eventData.left,
+      top: eventData.top,
+    });
+  };
+
   // Function to update initial positions (equivalent to _dragUpdateInitialPositions)
-  const updateInitialPositions = () => {
+  const updateInitialPositions = eventId => {
+    // If eventId is provided and we have columnObserver, read fresh data from engine
+    if (eventId && columnObserver) {
+      const [engineEvent] = columnObserver.getEventById(eventId);
+      if (engineEvent) {
+        updateEventState(engineEvent);
+        return;
+      }
+    }
+
+    // Fallback to DOM positions
     if (eventRef.current) {
       setInitialPosition({
         left: eventRef.current.offsetLeft,
@@ -23,12 +48,27 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
 
   useEffect(() => {
     updateInitialPositions();
-  }, []);
+
+    if (!columnObserver) return;
+
+    // Register the React state update function
+    columnObserver.registerEventUpdateFunction(event.id, updateEventState);
+
+    columnObserver.registerEvent(event, layout => {
+      setDragging(layout);
+    });
+
+    // Cleanup function to unregister on unmount
+    return () => {
+      columnObserver.unregisterEventUpdateFunction(event.id);
+    };
+  }, [columnObserver]);
 
   // Expose the update function on the DOM element for ColumnObserver compatibility
   useEffect(() => {
     if (eventRef.current) {
-      eventRef.current._dragUpdateInitialPositions = updateInitialPositions;
+      eventRef.current._dragUpdateInitialPositions = () =>
+        updateInitialPositions(event.id);
     }
   });
 
@@ -64,22 +104,31 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
 
   const handleMouseMove = e => {
     if (!isDragging) return;
-
     const deltaX = e.clientX - dragStart.x;
     const deltaY = e.clientY - dragStart.y;
     const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    if (totalMovement > DRAG_THRESHOLD) {
-      setHasMoved(true);
-    }
-
-    if (hasMoved) {
-      eventRef.current.style.left = initialPosition.left + deltaX + 'px';
-      eventRef.current.style.top = initialPosition.top + deltaY + 'px';
-    }
+    if (totalMovement > DRAG_THRESHOLD) setHasMoved(true);
 
     const hoveredColumn = detectHoveredColumn(eventRef.current);
-    setCurrentColumn(hoveredColumn);
+    if (hoveredColumn) setCurrentColumn(hoveredColumn);
+
+    columnObserver.updateEvent(
+      event.id,
+      {
+        left: initialPosition.left + deltaX,
+        top: initialPosition.top + deltaY,
+        currentColumnId: hoveredColumn?.id,
+      },
+      ({left, top, width}) => {
+        setDragging({
+          ...dragging,
+          left,
+          top,
+          ...(width && {width}),
+        });
+      },
+    );
 
     columns.forEach(column => {
       column.style.backgroundColor =
@@ -91,33 +140,15 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     setIsDragging(false);
 
     if (currentColumn && hasMoved && columnObserver) {
-      const columnCameFrom = columnObserver.getColIdEvIsLoc(event.id);
-      
-      // Get rect data from DOM element and combine with event data
-      const rect = eventRef.current.getBoundingClientRect();
-      const eventData = {
-        ...event,
-        top: rect.top,
-        bottom: rect.bottom,
-        width: rect.width,
-        height: rect.height,
-        left: rect.left,
-      };
-      
-      columnObserver.addEventToColumn(eventData, currentColumn.id);
-
-      // Trigger layout recalculation in parent component
-      if (onEventMove) {
-        onEventMove();
-      }
-
-      setInitialPosition({
-        left: eventRef.current.offsetLeft,
-        top: eventRef.current.offsetTop,
+      columnObserver.calibrateEvent(event.id, ({left}) => {
+        setDragging({...dragging, left});
       });
     } else if (!hasMoved) {
-      eventRef.current.style.left = initialPosition.left + 'px';
-      eventRef.current.style.top = initialPosition.top + 'px';
+      setDragging({
+        ...dragging,
+        left: initialPosition.left + 'px',
+        top: initialPosition.top + 'px',
+      });
     }
 
     columns.forEach(column => {
@@ -126,28 +157,19 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     setCurrentColumn(null);
   };
 
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragStart, initialPosition, hasMoved, currentColumn]);
-
   return (
     <div
       ref={eventRef}
       id={event.id}
       className="event"
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       style={{
         height: `${event.height}px`,
         backgroundColor: event.backgroundColor,
         width: event.width,
         cursor: isDragging ? 'grabbing' : 'grab',
-        top: event.top,
+        ...dragging,
         zIndex: isDragging ? 1000 : 'auto',
       }}
       onMouseDown={handleMouseDown}

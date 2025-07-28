@@ -7,7 +7,7 @@ import DraggableEvent from './DraggableEvent';
 import './styles.css';
 
 const NUM_OF_COL = 7;
-const NUM_OF_EVENTS = 2;
+const NUM_OF_EVENTS = 8;
 
 const App = ({
   events = createInitialEvents(NUM_OF_EVENTS),
@@ -24,45 +24,10 @@ const App = ({
     if (columnObserverRef.current) return;
 
     columnObserverRef.current = new ColumnObserver();
-    columnObserverRef.current.initializeColumns(columnRefs.current);
+    columnObserverRef.current.registerColumns(columnRefs.current);
 
     setColumns(columnRefs.current);
   }, []);
-
-  // Initialize events in columns after both ColumnObserver and DOM elements are ready
-  useEffect(() => {
-    if (!columnObserverRef.current || columns.length === 0) return;
-
-    // Add each event to the matching column based on its date
-    events.forEach((event, idx) => {
-      const eventElement = document.getElementById(event.id);
-      const eventDateString = dateUtils.getYYYMMDD(event.startDate);
-      const targetColumnId = `column_${eventDateString}`;
-      const targetColumn = document.getElementById(targetColumnId);
-
-      if (eventElement && targetColumn) {
-        // Get rect data from DOM element and combine with event data
-        const rect = eventElement.getBoundingClientRect();
-        const eventData = {
-          ...event,
-          top: rect.top,
-          bottom: rect.bottom,
-          width: rect.width,
-          height: rect.height,
-          left: rect.left,
-        };
-        
-        // Add event to matching column based on date
-        columnObserverRef.current.addEventToColumn(
-          eventData,
-          targetColumnId,
-        );
-      }
-    });
-
-    // Refresh layout to position events properly
-    refreshLayout();
-  }, [columns, events]);
 
   // Add column hover listeners
   useEffect(() => {
@@ -107,12 +72,12 @@ const App = ({
     Object.entries(layoutResults).forEach(([eventId, layout]) => {
       const element = document.getElementById(eventId);
       if (element) {
-        element.style.width = layout.width + 'px';
-        element.style.left = layout.left + 'px';
+        // element.style.width = layout.width + 'px';
+        // element.style.left = layout.left + 'px';
 
         // Update initial positions for drag functionality
         if (element._dragUpdateInitialPositions) {
-          element._dragUpdateInitialPositions();
+          // element._dragUpdateInitialPositions();
         }
       }
     });
