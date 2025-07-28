@@ -3,6 +3,8 @@
  * Handles event positioning, overlap detection, and layout management
  */
 
+import {calcDOMElem, dateUtils} from '../helpers.js';
+
 // Color constants
 const COLORS = {
   HOVER_BLUE: '#3498db',
