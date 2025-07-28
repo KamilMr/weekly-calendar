@@ -56,29 +56,39 @@ export default class ColumnObserver {
     });
   }
 
-  _translateDateToCoord({event: {startDate, endDate}}) {
-    console.log(startDate)
+  _translateDateToColumnPosition(event, columnId) {
+    const {startDate, endDate} = event;
     // Convert date/time to pixel coordinates
     // Assumes startDate and endDate are Date objects or ISO strings
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
+
+    // Get column height for relative calculations
+    const columnData = this.columns[columnId];
+    const columnHeight = columnData?._heigth || 600; // fallback to 600px
+
     // Calculate duration in milliseconds
     const duration = end.getTime() - start.getTime();
-    
+
     // Convert to hours for easier calculation
     const durationHours = duration / (1000 * 60 * 60);
-    
-    // Assume 1 hour = 60px (configurable)
-    const pixelsPerHour = 60;
+
+    // Calculate pixels per hour based on column height (24 hours in a day)
+    const pixelsPerHour = columnHeight / 24;
     const height = Math.max(durationHours * pixelsPerHour, 20); // minimum 20px height
-    
+
     // Calculate top position based on start time
     // Assume day starts at 00:00, so get hour + minute offset
     const startHour = start.getHours() + start.getMinutes() / 60;
     const top = startHour * pixelsPerHour;
-    
-    return {top, height};
+
+    return {
+      top,
+      height,
+      bottom: top + height,
+      left: columnData._left,
+      width: columnData._width,
+    };
   }
 
   addEventToColumn(eventData, columnId) {
