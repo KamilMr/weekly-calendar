@@ -27,8 +27,33 @@ export default class ColumnObserver {
     };
   }
 
-  _removeColumn(columnId) {
-    delete this.columns[columnId];
+  _findEventInColumns(eventId) {
+    for (const colId of Object.keys(this.columns)) {
+      const events = this.columns[colId].events;
+      const eventIndex = events.findIndex(ev => ev.id === eventId);
+      if (eventIndex !== -1) {
+        return {
+          eventData: events[eventIndex],
+          columnId: colId,
+          eventIndex: eventIndex,
+        };
+      }
+    }
+    return null;
+  }
+
+  _removeEventFromColumns(eventData) {
+    const eventId = typeof eventData === 'object' ? eventData.id : eventData;
+    Object.keys(this.columns).forEach(key => {
+      const columnEvents = this.columns[key].events;
+      if (columnEvents.length > 0) {
+        const eventIndex = columnEvents.findIndex(e => e.id === eventId);
+        if (eventIndex !== -1) {
+          // Remove from column events
+          this.columns[key].events = columnEvents.filter(e => e.id !== eventId);
+        }
+      }
+    });
   }
 
   _translateDateToCoord({event: {startDate, endDate}}) {
