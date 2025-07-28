@@ -91,65 +91,43 @@ export default class ColumnObserver {
     };
   }
 
-  addEventToColumn(eventData, columnId) {
-    // eventData should be a plain object with: {id, top, bottom, width, height, left, startDate, endDate, ...}
-    this.removeEventFromColumns(eventData);
-    this.columns[columnId].events.push({
-      id: eventData.id,
-      top: eventData.top,
-      bottom: eventData.bottom,
-      width: eventData.width,
-      height: eventData.height,
-      left: eventData.left,
-      startDate: eventData.startDate,
-      endDate: eventData.endDate,
-      ...eventData, // spread any additional properties
-    });
+  _translateColumnPositionToDate(top, height, columnId) {
+    // Get column data
+    const columnData = this.columns[columnId];
+    if (!columnData) return null;
 
-    // check for overlaps and get wrapper dimensions if needed
-    const overlappingIds = this._getOverlappingEventsFromColumn(
-      eventData.id,
-      columnId,
-    );
-    if (overlappingIds) {
-      // Add the current event to the overlapping group
-      const allOverlappingIds = [...overlappingIds, eventData.id];
-      this._addToOverlapped(columnId, allOverlappingIds);
-    }
-  }
+    const columnHeight = columnData._heigth || 600; // fallback to 600px
 
-  removeEventFromColumn(eventId, columnId) {
-    //NOTE col not exist in another impl
-    this.columns[columnId].events = this.columns[columnId].events.filter(
-      event => event.id !== eventId,
-    );
+    // Calculate pixels per hour (24 hours in a day)
+    const pixelsPerHour = columnHeight / 24;
 
-    // remove from overlapped events
-    this._removeFromOverlapped(eventId);
-  }
+    // Calculate start time from top position
+    const startHour = top / pixelsPerHour;
+    const startHourInt = Math.floor(startHour);
+    const startMinutes = Math.round((startHour - startHourInt) * 60);
 
-  // Public method to remove event from all columns (like original oem)
-  removeEventFromColumns(eventData) {
-    const eventId = typeof eventData === 'object' ? eventData.id : eventData;
-    Object.keys(this.columns)
-      .filter(key => key.startsWith('column'))
-      .forEach(key => {
-        const columnEvents = this.columns[key].events;
-        if (columnEvents) {
-          const eventIndex = columnEvents.findIndex(e => e.id === eventId);
-          if (eventIndex !== -1) {
-            // Remove from overlap management before removing from column
-            this.removeFromOverlapped(eventId);
-            // Remove from column events
-            this.columns[key].events = columnEvents.filter(e => e.id !== eventId);
-          }
-        }
-      });
-  }
+    // Calculate duration from height
+    const durationHours = height / pixelsPerHour;
 
-  // Public method for external access (like original oem)
-  getOverlappingEventsFromColumn(eId, columnId) {
-    return this._getOverlappingEventsFromColumn(eId, columnId);
+    // Extract date from columnId (assumes format contains YYYY-MM-DD)
+    const dateMatch = columnId.match(/(\d{4}-\d{2}-\d{2})/);
+    if (!dateMatch) return null;
+
+    const baseDate = new Date(dateMatch[1]);
+    if (isNaN(baseDate.getTime())) return null;
+
+    // Create start date with calculated time
+    const startDate = new Date(baseDate);
+    startDate.setHours(startHourInt, startMinutes, 0, 0);
+
+    // Create end date by adding duration
+    const endDate = new Date(startDate);
+    endDate.setTime(startDate.getTime() + durationHours * 60 * 60 * 1000);
+
+    return {
+      startDate,
+      endDate,
+    };
   }
 
   // Public method for external access (like original oem)
