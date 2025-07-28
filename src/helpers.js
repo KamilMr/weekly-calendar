@@ -4,14 +4,26 @@ const generateColorFromNumber = number => {
 };
 
 const createInitialEvents = num => {
-  return Array.from({length: num}, (_, idx) => ({
-    id: `event${idx + 1}`,
-    height: (idx + 2) * 20,
-    width: 130,
-    top: idx * 10,
-    backgroundColor: generateColorFromNumber(idx),
-    date: date.addDayToDate(new Date(), idx),
-  }));
+  return Array.from({length: num}, (_, idx) => {
+    // Create varied start times throughout the day
+    const baseDate = date.addDayToDate(new Date(), idx % 7); // Spread across different days
+    const startHour = 8 + ((idx * 2) % 14); // Hours between 8-22
+    const startMinute = (idx * 15) % 60; // Minutes: 0, 15, 30, 45
+    const durationHours = 1 + (idx % 3); // Duration: 1, 2, or 3 hours
+
+    const startDate = new Date(baseDate);
+    startDate.setHours(startHour, startMinute, 0, 0);
+
+    const endDate = new Date(startDate);
+    endDate.setHours(startDate.getHours() + durationHours);
+
+    return {
+      id: `event${idx + 1}`,
+      backgroundColor: generateColorFromNumber(idx),
+      startDate: startDate,
+      endDate: endDate,
+    };
+  });
 };
 
 const date = {};
@@ -60,4 +72,44 @@ date.getYYYMMDD = (newDate = new Date()) => {
   return newDate.toISOString().split('T')[0];
 };
 
-export {generateColorFromNumber, createInitialEvents, date as dateUtils};
+const get3CharId = () => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const existingIds = new Set();
+  Object.values(this.overlappedEvents).forEach(columnGroups => {
+    Object.keys(columnGroups).forEach(groupId => {
+      existingIds.add(groupId);
+    });
+  });
+
+  let newId;
+  do {
+    newId = '';
+    for (let i = 0; i < 3; i++) {
+      newId += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+  } while (existingIds.has(newId));
+
+  return newId;
+};
+
+const calcDOMElem = el => {
+  // const domEl = typeof el === Element ? el : el.getElementById(el.id);
+  const domEl = el;
+  const rect = domEl.getBoundingClientRect();
+  return {
+    element: el,
+    left: rect.left,
+    bottom: rect.bottom,
+    top: rect.top,
+    height: rect.height,
+    width: rect.width,
+  };
+};
+
+export {
+  calcDOMElem,
+  createInitialEvents,
+  date as dateUtils,
+  generateColorFromNumber,
+  get3CharId,
+};
