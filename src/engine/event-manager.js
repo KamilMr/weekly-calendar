@@ -18,11 +18,12 @@ export default class ColumnObserver {
     this.eventUpdateFunctions = new Map(); // Store React state update functions
   }
 
-  _addColumn(column) {
-    this.columns[column.id] = {
+  _registerColumn(colData) {
+    this.columns[colData.element.id] = {
       events: [],
-      _width: column.getBoundingClientRect().width || 130,
-      _element: column
+      _width: colData.width,
+      _heigth: colData.height,
+      _left: colData.left,
     };
   }
 
