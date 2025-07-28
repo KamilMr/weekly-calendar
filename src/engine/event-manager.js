@@ -15,6 +15,7 @@ export default class ColumnObserver {
   constructor() {
     this.columns = {};
     this.overlappedEvents = {};
+    this.eventUpdateFunctions = new Map(); // Store React state update functions
   }
 
   _addColumn(column) {
