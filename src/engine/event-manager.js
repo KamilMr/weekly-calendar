@@ -317,7 +317,7 @@ export default class ColumnObserver {
   }
 
   // adjust to column
-  calibrateEvent(eventId, cb) {
+  calibrateEvent(eventId, sourceColumnId, cb) {
     const found = this._findEventInColumns(eventId);
     if (!found) return;
 
@@ -327,8 +327,9 @@ export default class ColumnObserver {
       this.columns[columnId]._left;
 
     this._updateEventsInColumnById(columnId);
-    this._updateEventsInColumnById(colId);
-    // cb?.(updatedEvent);
+    this._updateEventsInColumnById(sourceColumnId);
+
+    cb?.(updatedEvent);
   }
 
   updateAllColumns() {
