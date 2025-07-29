@@ -10,6 +10,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const [dragging, setDragging] = useState({top: 0, left: 0});
   const [hasMoved, setHasMoved] = useState(false);
   const [currentColumn, setCurrentColumn] = useState(null);
+  const sourceColumnId = useRef();
   const eventRef = useRef();
 
   // Function to update React state from engine data
@@ -83,6 +84,8 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
 
     const hoveredColumn = detectHoveredColumn(eventRef.current);
     if (hoveredColumn) setCurrentColumn(hoveredColumn);
+    if (!sourceColumnId.current && hoveredColumn)
+      sourceColumnId.current = hoveredColumn.id;
 
     columnObserver.updateEvent(
       event.id,
@@ -111,9 +114,10 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     setIsDragging(false);
 
     if (currentColumn && hasMoved && columnObserver) {
-      columnObserver.calibrateEvent(event.id, ({left}) => {
-        setDragging({...dragging, left});
-      });
+      columnObserver.calibrateEvent(
+        event.id,
+        sourceColumnId.current !== currentColumn ? sourceColumnId.current : null,
+      );
     } else if (!hasMoved) {
       setDragging({
         ...dragging,
@@ -125,6 +129,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     columns.forEach(column => {
       column.style.backgroundColor = COLORS.DEFAULT;
     });
+    sourceColumnId.current = null;
     setCurrentColumn(null);
   };
 

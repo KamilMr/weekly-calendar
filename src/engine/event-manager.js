@@ -327,7 +327,7 @@ export default class ColumnObserver {
       this.columns[columnId]._left;
 
     this._updateEventsInColumnById(columnId);
-    this._updateEventsInColumnById(sourceColumnId);
+    if (sourceColumnId) this._updateEventsInColumnById(sourceColumnId);
 
     cb?.(updatedEvent);
   }
