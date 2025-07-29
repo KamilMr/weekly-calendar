@@ -29,31 +29,6 @@ const App = ({
     setColumns(columnRefs.current);
   }, []);
 
-  // Add column hover listeners
-  useEffect(() => {
-    columns.forEach(column => {
-      if (column) {
-        const handleMouseEnter = () => {
-          column.style.backgroundColor = COLORS.HOVER_BLUE;
-          column.style.color = COLORS.DEFAULT;
-        };
-
-        const handleMouseLeave = () => {
-          column.style.backgroundColor = COLORS.DEFAULT;
-          column.style.color = COLORS.DEFAULT;
-        };
-
-        column.addEventListener('mouseenter', handleMouseEnter);
-        column.addEventListener('mouseleave', handleMouseLeave);
-
-        return () => {
-          column.removeEventListener('mouseenter', handleMouseEnter);
-          column.removeEventListener('mouseleave', handleMouseLeave);
-        };
-      }
-    });
-  }, [columns]);
-
   // Global window resize handler to refresh layout after all events are processed
   useEffect(() => {
     const handleGlobalResize = () => {
