@@ -140,7 +140,7 @@ export default class ColumnObserver {
       left: idx * elementWidth + columnOffset,
     }));
   }
-  //
+
   _recalculateOverlappedEvents(eventIds, columnId) {
     if (!eventIds || eventIds.length === 0)
       return {updatedEvents: [], affectedEventIds: []};
@@ -230,6 +230,23 @@ export default class ColumnObserver {
 
     return overlapGroups;
   }
+
+  _updateEventsInColumnById(columnId) {
+    if (!this.columns[columnId]) return;
+
+    const groups = this._getOverlappingEventsFromColumn(columnId);
+    const calcGroups = groups.map(gr =>
+      this._recalculateOverlappedEvents(gr, columnId),
+    );
+
+    calcGroups.forEach(gr => {
+      gr.updatedEvents.forEach(ev => {
+        const updateFunction = this.eventUpdateFunctions.get(ev.id);
+        updateFunction?.(ev);
+      });
+    });
+  }
+
   // Public methods
   registerColumns(columns) {
     columns.forEach(column => this._registerColumn(calcDOMElem(column)));
@@ -309,21 +326,15 @@ export default class ColumnObserver {
     this.columns[columnId].events[eventIndex].left =
       this.columns[columnId]._left;
 
-    const groups = this._getOverlappingEventsFromColumn(columnId);
-    const calcGroups = groups.map(gr =>
-      this._recalculateOverlappedEvents(gr, columnId),
-    );
-
-    calcGroups.forEach(gr => {
-      gr.updatedEvents.forEach(ev => {
-        const updateFunction = this.eventUpdateFunctions.get(ev.id);
-        updateFunction?.(ev);
-      });
-    });
-
-    // Call registered React state update function
-
+    this._updateEventsInColumnById(columnId);
+    this._updateEventsInColumnById(colId);
     // cb?.(updatedEvent);
+  }
+
+  updateAllColumns() {
+    Object.keys(this.columns).forEach(columnId =>
+      this._updateEventsInColumnById(columnId),
+    );
   }
 }
 export {COLORS};
