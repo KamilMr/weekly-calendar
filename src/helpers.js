@@ -96,7 +96,7 @@ const calcDOMElem = el => {
   const domEl = el instanceof Element ? el : document.getElementById(el);
   const rect = domEl.getBoundingClientRect();
   return {
-    element: el,
+    element: domEl,
     left: rect.left,
     bottom: rect.bottom,
     top: rect.top,
