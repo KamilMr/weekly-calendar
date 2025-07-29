@@ -26,29 +26,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     });
   };
 
-  // Function to update initial positions (equivalent to _dragUpdateInitialPositions)
-  const updateInitialPositions = eventId => {
-    // If eventId is provided and we have columnObserver, read fresh data from engine
-    if (eventId && columnObserver) {
-      const [engineEvent] = columnObserver.getEventById(eventId);
-      if (engineEvent) {
-        updateEventState(engineEvent);
-        return;
-      }
-    }
-
-    // Fallback to DOM positions
-    if (eventRef.current) {
-      setInitialPosition({
-        left: eventRef.current.offsetLeft,
-        top: eventRef.current.offsetTop,
-      });
-    }
-  };
-
   useEffect(() => {
-    updateInitialPositions();
-
     if (!columnObserver) return;
 
     // Register the React state update function
@@ -63,14 +41,6 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       columnObserver.unregisterEventUpdateFunction(event.id);
     };
   }, [columnObserver]);
-
-  // Expose the update function on the DOM element for ColumnObserver compatibility
-  useEffect(() => {
-    if (eventRef.current) {
-      eventRef.current._dragUpdateInitialPositions = () =>
-        updateInitialPositions(event.id);
-    }
-  });
 
   const detectHoveredColumn = element => {
     const draggedRect = element.getBoundingClientRect();
