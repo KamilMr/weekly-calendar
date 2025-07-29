@@ -74,7 +74,9 @@ const App = ({
               event={event}
               columnObserver={columnObserverRef.current}
               columns={columns}
-              onEventMove={() => {console.log('onEventMove')}}
+              onEventMove={() => {
+                console.log('onEventMove');
+              }}
             />
           ))}
         </div>

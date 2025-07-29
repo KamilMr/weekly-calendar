@@ -33,7 +33,8 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     columnObserver.registerEventUpdateFunction(event.id, updateEventState);
 
     columnObserver.registerEvent(event, layout => {
-      setDragging(layout);
+      //TODO: update only one column instead
+      columnObserver.updateAllColumns();
     });
 
     // Cleanup function to unregister on unmount
