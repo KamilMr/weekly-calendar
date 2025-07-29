@@ -93,8 +93,7 @@ const get3CharId = () => {
 };
 
 const calcDOMElem = el => {
-  // const domEl = typeof el === Element ? el : el.getElementById(el.id);
-  const domEl = el;
+  const domEl = el instanceof Element ? el : document.getElementById(el);
   const rect = domEl.getBoundingClientRect();
   return {
     element: el,
