@@ -116,11 +116,21 @@ describe('ColumnObserver', () => {
       observer.registerEvent(eventData);
 
       expect(observer.columns['col-2025-01-15'].events).toHaveLength(1);
-      expect(observer.columns['col-2025-01-15'].events[0]).toMatchObject(eventData);
-      expect(observer.columns['col-2025-01-15'].events[0]).toHaveProperty('top');
-      expect(observer.columns['col-2025-01-15'].events[0]).toHaveProperty('left');
-      expect(observer.columns['col-2025-01-15'].events[0]).toHaveProperty('height');
-      expect(observer.columns['col-2025-01-15'].events[0]).toHaveProperty('width');
+      expect(observer.columns['col-2025-01-15'].events[0]).toMatchObject(
+        eventData,
+      );
+      expect(observer.columns['col-2025-01-15'].events[0]).toHaveProperty(
+        'top',
+      );
+      expect(observer.columns['col-2025-01-15'].events[0]).toHaveProperty(
+        'left',
+      );
+      expect(observer.columns['col-2025-01-15'].events[0]).toHaveProperty(
+        'height',
+      );
+      expect(observer.columns['col-2025-01-15'].events[0]).toHaveProperty(
+        'width',
+      );
       expect(observer.columns['col-2025-01-16'].events).toHaveLength(0);
     });
 
@@ -172,8 +182,12 @@ describe('ColumnObserver', () => {
       observer.registerEvent(event2);
 
       expect(observer.columns['col-2025-01-15'].events).toHaveLength(2);
-      expect(observer.columns['col-2025-01-15'].events[0]).toMatchObject(event1);
-      expect(observer.columns['col-2025-01-15'].events[1]).toMatchObject(event2);
+      expect(observer.columns['col-2025-01-15'].events[0]).toMatchObject(
+        event1,
+      );
+      expect(observer.columns['col-2025-01-15'].events[1]).toMatchObject(
+        event2,
+      );
     });
   });
 
@@ -345,7 +359,7 @@ describe('ColumnObserver', () => {
         endDate: new Date('2025-01-15T15:00:00'),
         title: 'Event 2',
       };
-      
+
       observer.registerEvent(event1);
       observer.registerEvent(event2);
 
@@ -368,7 +382,7 @@ describe('ColumnObserver', () => {
         endDate: new Date('2025-01-15T12:00:00'),
         title: 'Event 2',
       };
-      
+
       observer.registerEvent(event1);
       observer.registerEvent(event2);
 
@@ -398,7 +412,7 @@ describe('ColumnObserver', () => {
         endDate: new Date('2025-01-15T13:00:00'),
         title: 'Event C',
       };
-      
+
       observer.registerEvent(eventA);
       observer.registerEvent(eventB);
       observer.registerEvent(eventC);
@@ -442,7 +456,7 @@ describe('ColumnObserver', () => {
         endDate: new Date('2025-01-15T19:00:00'),
         title: 'Event 5',
       };
-      
+
       observer.registerEvent(event1);
       observer.registerEvent(event2);
       observer.registerEvent(event3);
@@ -451,12 +465,12 @@ describe('ColumnObserver', () => {
 
       const result = observer._getOverlappingEventsFromColumn('col-2025-01-15');
       expect(result).toHaveLength(3);
-      
+
       // Find the groups
       const group1 = result.find(group => group.includes('event1'));
       const group2 = result.find(group => group.includes('event3'));
       const group3 = result.find(group => group.includes('event5'));
-      
+
       expect(group1).toEqual(expect.arrayContaining(['event1', 'event2']));
       expect(group2).toEqual(expect.arrayContaining(['event3', 'event4']));
       expect(group3).toEqual(['event5']);
