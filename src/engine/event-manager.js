@@ -130,6 +130,106 @@ export default class ColumnObserver {
     };
   }
 
+  _calculateElementLayout(elements, columnWidth, columnOffset) {
+    const numberOfElements = elements.length;
+    const elementWidth = columnWidth / numberOfElements;
+
+    return elements.map((id, idx) => ({
+      id,
+      width: elementWidth,
+      left: idx * elementWidth + columnOffset,
+    }));
+  }
+  //
+  _recalculateOverlappedEvents(eventIds, columnId) {
+    if (!eventIds || eventIds.length === 0)
+      return {updatedEvents: [], affectedEventIds: []};
+
+    // Get column metadata
+    const columnData = this.columns[columnId];
+    if (!columnData) return {updatedEvents: [], affectedEventIds: []};
+
+    const columnWidth = columnData._width || 130;
+    const columnOffset = columnData._left || 0;
+
+    // Calculate new layout for overlapping events
+    const layoutResults = this._calculateElementLayout(
+      eventIds,
+      columnWidth,
+      columnOffset,
+    );
+
+    // Update events in the column with new positioning
+    const updatedEvents = [];
+    layoutResults.forEach(layout => {
+      const eventIndex = columnData.events.findIndex(e => e.id === layout.id);
+      if (eventIndex !== -1) {
+        // Update the event's position properties
+        columnData.events[eventIndex].left = layout.left;
+        columnData.events[eventIndex].width = layout.width;
+
+        // Add to updated events array
+        updatedEvents.push(columnData.events[eventIndex]);
+      }
+    });
+
+    return {
+      updatedEvents: updatedEvents,
+      affectedEventIds: eventIds,
+    };
+  }
+
+  _checkEventsOverlap(event1, event2) {
+    return !(event1.bottom <= event2.top || event1.top >= event2.bottom);
+  }
+
+  _getOverlappingEventsFromColumn(columnId) {
+    const columnEvents = this.columns[columnId]?.events || [];
+
+    if (columnEvents.length === 0) return [];
+
+    // Track which events have been processed
+    const processed = new Set();
+    const overlapGroups = [];
+
+    // For each unprocessed event, find all events it overlaps with
+    columnEvents.forEach(event => {
+      if (processed.has(event.id)) return;
+
+      // Start a new overlap group with current event
+      const currentGroup = [event.id];
+      processed.add(event.id);
+
+      // Find all events that overlap with any event in current group
+      // We need to keep checking until no new overlaps are found
+      let foundNewOverlap = true;
+      while (foundNewOverlap) {
+        foundNewOverlap = false;
+
+        columnEvents.forEach(candidateEvent => {
+          if (processed.has(candidateEvent.id)) return;
+
+          // Check if candidate overlaps with any event in current group
+          const overlapsWithGroup = currentGroup.some(groupEventId => {
+            const groupEvent = columnEvents.find(e => e.id === groupEventId);
+            return (
+              groupEvent && this._checkEventsOverlap(groupEvent, candidateEvent)
+            );
+          });
+
+          if (overlapsWithGroup) {
+            currentGroup.push(candidateEvent.id);
+            processed.add(candidateEvent.id);
+            foundNewOverlap = true;
+          }
+        });
+      }
+
+      overlapGroups.push(currentGroup);
+    });
+
+    return overlapGroups;
+  }
   // Public methods
   registerColumns(columns) {
     columns.forEach(column => this._registerColumn(calcDOMElem(column)));
@@ -199,58 +299,6 @@ export default class ColumnObserver {
     }
   }
 
-  _checkEventsOverlap(event1, event2) {
-    return !(event1.bottom <= event2.top || event1.top >= event2.bottom);
-  }
-
-  _getOverlappingEventsFromColumn(columnId) {
-    const columnEvents = this.columns[columnId]?.events || [];
-
-    if (columnEvents.length === 0) return [];
-
-    // Track which events have been processed
-    const processed = new Set();
-    const overlapGroups = [];
-
-    // For each unprocessed event, find all events it overlaps with
-    columnEvents.forEach(event => {
-      if (processed.has(event.id)) return;
-
-      // Start a new overlap group with current event
-      const currentGroup = [event.id];
-      processed.add(event.id);
-
-      // Find all events that overlap with any event in current group
-      // We need to keep checking until no new overlaps are found
-      let foundNewOverlap = true;
-      while (foundNewOverlap) {
-        foundNewOverlap = false;
-
-        columnEvents.forEach(candidateEvent => {
-          if (processed.has(candidateEvent.id)) return;
-
-          // Check if candidate overlaps with any event in current group
-          const overlapsWithGroup = currentGroup.some(groupEventId => {
-            const groupEvent = columnEvents.find(e => e.id === groupEventId);
-            return (
-              groupEvent && this._checkEventsOverlap(groupEvent, candidateEvent)
-            );
-          });
-
-          if (overlapsWithGroup) {
-            currentGroup.push(candidateEvent.id);
-            processed.add(candidateEvent.id);
-            foundNewOverlap = true;
-          }
-        });
-      }
-
-      overlapGroups.push(currentGroup);
-    });
-
-    return overlapGroups;
-  }
-
   // adjust to column
   calibrateEvent(eventId, cb) {
     const found = this._findEventInColumns(eventId);
@@ -260,8 +308,6 @@ export default class ColumnObserver {
 
     this.columns[columnId].events[eventIndex].left =
       this.columns[columnId]._left;
-
-    const updatedEvent = this.columns[columnId].events[eventIndex];
 
     const groups = this._getOverlappingEventsFromColumn(columnId);
     const calcGroups = groups.map(gr =>
@@ -278,55 +324,6 @@ export default class ColumnObserver {
     // Call registered React state update function
 
     // cb?.(updatedEvent);
-  }
-
-  _calculateElementLayout(elements, columnWidth, columnOffset) {
-    const numberOfElements = elements.length;
-    const elementWidth = columnWidth / numberOfElements;
-
-    return elements.map((id, idx) => ({
-      id,
-      width: elementWidth,
-      left: idx * elementWidth + columnOffset,
-    }));
-  }
-  //
-  _recalculateOverlappedEvents(eventIds, columnId) {
-    if (!eventIds || eventIds.length === 0)
-      return {updatedEvents: [], affectedEventIds: []};
-
-    // Get column metadata
-    const columnData = this.columns[columnId];
-    if (!columnData) return {updatedEvents: [], affectedEventIds: []};
-
-    const columnWidth = columnData._width || 130;
-    const columnOffset = columnData._left || 0;
-
-    // Calculate new layout for overlapping events
-    const layoutResults = this._calculateElementLayout(
-      eventIds,
-      columnWidth,
-      columnOffset,
-    );
-
-    // Update events in the column with new positioning
-    const updatedEvents = [];
-    layoutResults.forEach(layout => {
-      const eventIndex = columnData.events.findIndex(e => e.id === layout.id);
-      if (eventIndex !== -1) {
-        // Update the event's position properties
-        columnData.events[eventIndex].left = layout.left;
-        columnData.events[eventIndex].width = layout.width;
-
-        // Add to updated events array
-        updatedEvents.push(columnData.events[eventIndex]);
-      }
-    });
-
-    return {
-      updatedEvents: updatedEvents,
-      affectedEventIds: eventIds,
-    };
   }
 }
 export {COLORS};
