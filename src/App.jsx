@@ -29,61 +29,6 @@ const App = ({
     setColumns(columnRefs.current);
   }, []);
 
-  // Global window resize handler to refresh layout after all events are processed
-  useEffect(() => {
-    const handleGlobalResize = () => {
-      // Small delay to ensure all individual event resize handlers have completed
-      setTimeout(() => {
-        refreshLayout();
-      }, 0);
-    };
-
-    window.addEventListener('resize', handleGlobalResize);
-    return () => window.removeEventListener('resize', handleGlobalResize);
-  }, []);
-
-  // Apply layout calculations to DOM elements
-  const applyLayoutToDOM = layoutResults => {
-    Object.entries(layoutResults).forEach(([eventId, layout]) => {
-      const element = document.getElementById(eventId);
-      if (element) {
-        // element.style.width = layout.width + 'px';
-        // element.style.left = layout.left + 'px';
-
-        // Update initial positions for drag functionality
-        if (element._dragUpdateInitialPositions) {
-          // element._dragUpdateInitialPositions();
-        }
-      }
-    });
-  };
-
-  // Refresh layout and apply to DOM
-  const refreshLayout = () => {
-    if (!columnObserverRef.current || columns.length === 0) return;
-
-    // Get column dimensions
-    const columnWidths = {};
-    const columnOffsets = {};
-    columns.forEach(column => {
-      if (column) {
-        const rect = column.getBoundingClientRect();
-        columnWidths[column.id] = rect.width;
-        columnOffsets[column.id] = column.offsetLeft;
-      }
-    });
-
-    // Calculate layout using engine
-    const layoutResults = columnObserverRef.current.calculateLayout(
-      undefined, // use default column IDs
-      columnWidths,
-      columnOffsets,
-    );
-
-    // Apply to DOM
-    applyLayoutToDOM(layoutResults);
-  };
-
   return (
     <div className="container">
       <div
@@ -129,7 +74,7 @@ const App = ({
               event={event}
               columnObserver={columnObserverRef.current}
               columns={columns}
-              onEventMove={refreshLayout}
+              onEventMove={() => {console.log('onEventMove')}}
             />
           ))}
         </div>
