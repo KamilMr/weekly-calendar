@@ -106,10 +106,15 @@ const calcDOMElem = el => {
   };
 };
 
+const snapToNearestMinutes = (minutes, snapInterval = 5) => {
+  return Math.round(minutes / snapInterval) * snapInterval;
+};
+
 export {
   calcDOMElem,
   createInitialEvents,
   date as dateUtils,
   generateColorFromNumber,
   get3CharId,
+  snapToNearestMinutes,
 };

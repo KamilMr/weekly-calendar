@@ -3,7 +3,7 @@
  * Handles event positioning, overlap detection, and layout management
  */
 
-import {calcDOMElem, dateUtils} from '../helpers.js';
+import {calcDOMElem, dateUtils, snapToNearestMinutes} from '../helpers.js';
 
 // Color constants
 const COLORS = {
@@ -104,7 +104,15 @@ export default class ColumnObserver {
     // Calculate start time from top position
     const startHour = top / pixelsPerHour;
     const startHourInt = Math.floor(startHour);
-    const startMinutes = Math.round((startHour - startHourInt) * 60);
+    const rawStartMinutes = (startHour - startHourInt) * 60;
+    let startMinutes = snapToNearestMinutes(rawStartMinutes, 15);
+    let finalStartHour = startHourInt;
+
+    // Handle minute overflow (60 minutes should become next hour)
+    if (startMinutes >= 60) {
+      finalStartHour += 1;
+      startMinutes = 0;
+    }
 
     // Calculate duration from height
     const durationHours = height / pixelsPerHour;
@@ -118,15 +126,21 @@ export default class ColumnObserver {
 
     // Create start date with calculated time
     const startDate = new Date(baseDate);
-    startDate.setHours(startHourInt, startMinutes, 0, 0);
+    startDate.setHours(finalStartHour, startMinutes, 0, 0);
 
     // Create end date by adding duration
     const endDate = new Date(startDate);
     endDate.setTime(startDate.getTime() + durationHours * 60 * 60 * 1000);
 
+    // Calculate the corrected top position based on snapped time
+    const snappedStartHour = finalStartHour + startMinutes / 60;
+    const correctedTop = snappedStartHour * pixelsPerHour;
+
     return {
       startDate,
       endDate,
+      top: correctedTop,
+      bottom: correctedTop + height,
     };
   }
 
@@ -291,15 +305,14 @@ export default class ColumnObserver {
 
     const {eventData, columnId, eventIndex} = found;
 
-      const date = this._translateColumnPositionToDate(top, this.columns[columnId].events[eventIndex].height, columnId)
-      const {startDate, endDate} = date;
+    const dateAndPosition = this._translateColumnPositionToDate(top, this.columns[columnId].events[eventIndex].height, columnId);
+    const {startDate, endDate, top: correctedTop, bottom: correctedBottom} = dateAndPosition;
     // Check if event is in current column
     if (columnId === currentColumnId) {
-      // Override left and top in same column
+      // Override left and top in same column with corrected positions
       this.columns[columnId].events[eventIndex].left = left;
-      this.columns[columnId].events[eventIndex].top = top;
-      this.columns[columnId].events[eventIndex].bottom =
-        top + this.columns[columnId].events[eventIndex].height;
+      this.columns[columnId].events[eventIndex].top = correctedTop;
+      this.columns[columnId].events[eventIndex].bottom = correctedBottom;
       this.columns[columnId].events[eventIndex].startDate = startDate;
       this.columns[columnId].events[eventIndex].endDate = endDate;
 
@@ -308,11 +321,12 @@ export default class ColumnObserver {
       // Remove from previous column and add to current one
       this._removeEventFromColumns(eventId);
 
-      // Update event data with new position
+      // Update event data with new position using corrected positions
       const updatedEventData = {
         ...eventData,
         left,
-        top,
+        top: correctedTop,
+        bottom: correctedBottom,
         startDate,
         endDate,
       };
