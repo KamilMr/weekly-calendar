@@ -291,6 +291,8 @@ export default class ColumnObserver {
 
     const {eventData, columnId, eventIndex} = found;
 
+      const date = this._translateColumnPositionToDate(top, this.columns[columnId].events[eventIndex].height, columnId)
+      const {startDate, endDate} = date;
     // Check if event is in current column
     if (columnId === currentColumnId) {
       // Override left and top in same column
@@ -298,6 +300,9 @@ export default class ColumnObserver {
       this.columns[columnId].events[eventIndex].top = top;
       this.columns[columnId].events[eventIndex].bottom =
         top + this.columns[columnId].events[eventIndex].height;
+      this.columns[columnId].events[eventIndex].startDate = startDate;
+      this.columns[columnId].events[eventIndex].endDate = endDate;
+
       cb?.(this.columns[columnId].events[eventIndex]);
     } else {
       // Remove from previous column and add to current one
@@ -308,6 +313,8 @@ export default class ColumnObserver {
         ...eventData,
         left,
         top,
+        startDate,
+        endDate,
       };
 
       // Push to new column
