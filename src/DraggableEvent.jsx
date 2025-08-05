@@ -151,10 +151,13 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         cursor: isDragging ? 'grabbing' : 'grab',
         ...dragging,
         zIndex: isDragging ? 1000 : 'auto',
+        display: 'flex',
+        flexDirection: 'column',
       }}
       onMouseDown={handleMouseDown}
     >
-      {getHour(dragging.startDate)}
+      <span>{getHour(dragging.startDate)}</span>
+      <span>{getHour(dragging.endDate)}</span>
     </div>
   );
 };
