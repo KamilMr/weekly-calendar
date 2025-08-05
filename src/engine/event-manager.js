@@ -22,7 +22,7 @@ export default class ColumnObserver {
     this.columns[colData.element.id] = {
       events: [],
       _width: colData.width,
-      _heigth: colData.height,
+      _height: colData.height,
       _left: colData.left,
     };
   }
@@ -65,7 +65,7 @@ export default class ColumnObserver {
 
     // Get column height for relative calculations
     const columnData = this.columns[columnId];
-    const columnHeight = columnData?._heigth || 600; // fallback to 600px
+    const columnHeight = columnData?._height || 600; // fallback to 600px
 
     // Calculate duration in milliseconds
     const duration = end.getTime() - start.getTime();
@@ -96,7 +96,7 @@ export default class ColumnObserver {
     const columnData = this.columns[columnId];
     if (!columnData) return null;
 
-    const columnHeight = columnData._heigth || 600; // fallback to 600px
+    const columnHeight = columnData._height || 600; // fallback to 600px
 
     // Calculate pixels per hour (24 hours in a day)
     const pixelsPerHour = columnHeight / 24;

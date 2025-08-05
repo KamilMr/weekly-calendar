@@ -48,21 +48,21 @@ describe('ColumnObserver', () => {
       expect(observer.columns['col-2025-01-01']).toEqual({
         events: [],
         _width: 130,
-        _heigth: 600,
+        _height: 600,
         _left: 0,
       });
 
       expect(observer.columns['col-2025-01-02']).toEqual({
         events: [],
         _width: 130,
-        _heigth: 600,
+        _height: 600,
         _left: 130,
       });
 
       expect(observer.columns['col-2025-01-03']).toEqual({
         events: [],
         _width: 130,
-        _heigth: 600,
+        _height: 600,
         _left: 260,
       });
 
