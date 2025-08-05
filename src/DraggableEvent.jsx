@@ -98,12 +98,14 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         top: initialPosition.top + deltaY,
         currentColumnId: hoveredColumn?.id,
       },
-      ({left, top, width}) => {
+      ({left, top, width, startDate, endDate}) => {
         setDragging({
           ...dragging,
           left,
           top,
           ...(width && {width}),
+          ...(startDate && {startDate}),
+          ...(endDate && {endDate}),
         });
       },
     );
