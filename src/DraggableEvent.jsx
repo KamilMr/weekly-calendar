@@ -16,6 +16,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   // Function to update React state from engine data
   const updateEventState = eventData => {
     setDragging({
+      ...eventData,
       left: eventData.left + 'px',
       top: eventData.top + 'px',
       width: eventData.width + 'px',
@@ -73,6 +74,8 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       top: eventRef.current.offsetTop,
     });
   };
+
+  const getHour = date => date?.toISOString().split('T')[1].split('.')[0]
 
   const handleMouseMove = e => {
     if (!isDragging) return;
@@ -150,7 +153,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       }}
       onMouseDown={handleMouseDown}
     >
-      {event.id}
+      {getHour(dragging.startDate)}
     </div>
   );
 };
