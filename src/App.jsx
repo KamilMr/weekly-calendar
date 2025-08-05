@@ -7,7 +7,7 @@ import DraggableEvent from './DraggableEvent';
 import './styles.css';
 
 const NUM_OF_COL = 7;
-const NUM_OF_EVENTS = 8;
+const NUM_OF_EVENTS = 2;
 
 const App = ({
   events = createInitialEvents(NUM_OF_EVENTS),

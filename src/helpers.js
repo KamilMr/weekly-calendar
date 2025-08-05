@@ -7,9 +7,10 @@ const createInitialEvents = num => {
   return Array.from({length: num}, (_, idx) => {
     // Create varied start times throughout the day
     const baseDate = date.addDayToDate(new Date(), idx % 7); // Spread across different days
-    const startHour = 8 + ((idx * 2) % 14); // Hours between 8-22
-    const startMinute = (idx * 15) % 60; // Minutes: 0, 15, 30, 45
-    const durationHours = 1 + (idx % 3); // Duration: 1, 2, or 3 hours
+    // const startHour = 8 + ((idx * 2) % 14); // Hours between 8-22
+    const startHour = 8;
+    const startMinute = 0;//(idx * 15) % 60; // Minutes: 0, 15, 30, 45
+    const durationHours = 1;// + (idx % 3); // Duration: 1, 2, or 3 hours
 
     const startDate = new Date(baseDate);
     startDate.setHours(startHour, startMinute, 0, 0);
@@ -19,7 +20,7 @@ const createInitialEvents = num => {
 
     return {
       id: `event${idx + 1}`,
-      backgroundColor: generateColorFromNumber(idx),
+      backgroundColor: generateColorFromNumber(1),
       startDate: startDate,
       endDate: endDate,
     };
