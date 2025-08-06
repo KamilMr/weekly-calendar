@@ -2,7 +2,6 @@ import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {COLORS} from './engine';
 
 const DRAG_THRESHOLD = 5;
-const BORDER_ZONE_HEIGHT = 5;
 const RESIZE_ZONE_HEIGHT = 8;
 
 const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
@@ -76,8 +75,8 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     const rect = eventRef.current.getBoundingClientRect();
     const mouseY = e.clientY - rect.top;
     
-    if (mouseY <= BORDER_ZONE_HEIGHT) return 'top';
-    else if (mouseY >= rect.height - BORDER_ZONE_HEIGHT) return 'bottom';
+    if (mouseY <= RESIZE_ZONE_HEIGHT) return 'top';
+    else if (mouseY >= rect.height - RESIZE_ZONE_HEIGHT) return 'bottom';
     return null;
   };
 
