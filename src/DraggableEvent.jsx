@@ -7,8 +7,11 @@ const RESIZE_ZONE_HEIGHT = 8;
 
 const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeMode, setResizeMode] = useState(null); // 'top' or 'bottom'
   const [dragStart, setDragStart] = useState({x: 0, y: 0});
   const [initialPosition, setInitialPosition] = useState({left: 0, top: 0});
+  const [initialHeight, setInitialHeight] = useState(0);
   const [dragging, setDragging] = useState({top: 0, left: 0});
   const [hasMoved, setHasMoved] = useState(false);
   const [currentColumn, setCurrentColumn] = useState(null);
@@ -88,7 +91,14 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
 
   const handleMouseDown = e => {
     e.preventDefault();
-    setIsDragging(true);
+    
+    const borderZone = detectBorderZone(e);
+    if (borderZone) {
+      setIsResizing(true);
+      setResizeMode(borderZone);
+      setInitialHeight(eventRef.current.offsetHeight);
+    } else setIsDragging(true);
+
     setHasMoved(false);
     setDragStart({x: e.clientX, y: e.clientY});
     setInitialPosition({
