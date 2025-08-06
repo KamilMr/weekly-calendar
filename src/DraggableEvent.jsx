@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {COLORS} from './engine';
 
 const DRAG_THRESHOLD = 5;
@@ -77,7 +77,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
 
   const getHour = date => date?.toTimeString().split(' ')[0]
 
-  const handleMouseMove = e => {
+  const handleMouseMove = useCallback(e => {
     if (!isDragging) return;
     const deltaX = e.clientX - dragStart.x;
     const deltaY = e.clientY - dragStart.y;
@@ -113,9 +113,9 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       column.style.backgroundColor =
         column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
     });
-  };
+  }, [isDragging, dragStart.x, dragStart.y, initialPosition.left, initialPosition.top, dragging, columnObserver, event.id, columns]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
 
     if (currentColumn && hasMoved && columnObserver) {
@@ -136,15 +136,27 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     });
     sourceColumnId.current = null;
     setCurrentColumn(null);
-  };
+  }, [currentColumn, hasMoved, columnObserver, event.id, dragging, initialPosition.left, initialPosition.top, columns]);
+
+  // Handle document-level mouse events during drag to prevent losing grip
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <div
       ref={eventRef}
       id={event.id}
       className="event"
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      onMouseMove={handleEventMouseMove}
       style={{
         height: `${event.height}px`,
         backgroundColor: event.backgroundColor,
