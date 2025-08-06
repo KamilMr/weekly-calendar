@@ -2,6 +2,8 @@ import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {COLORS} from './engine';
 
 const DRAG_THRESHOLD = 5;
+const BORDER_ZONE_HEIGHT = 5;
+const RESIZE_ZONE_HEIGHT = 8;
 
 const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -10,6 +12,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const [dragging, setDragging] = useState({top: 0, left: 0});
   const [hasMoved, setHasMoved] = useState(false);
   const [currentColumn, setCurrentColumn] = useState(null);
+  const [cursorType, setCursorType] = useState('grab');
   const sourceColumnId = useRef();
   const eventRef = useRef();
 
@@ -62,6 +65,25 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       }
     }
     return null;
+  };
+
+  const detectBorderZone = (e) => {
+    if (!eventRef.current) return null;
+    
+    const rect = eventRef.current.getBoundingClientRect();
+    const mouseY = e.clientY - rect.top;
+    
+    if (mouseY <= BORDER_ZONE_HEIGHT) return 'top';
+    else if (mouseY >= rect.height - BORDER_ZONE_HEIGHT) return 'bottom';
+    return null;
+  };
+
+  const handleEventMouseMove = (e) => {
+    if (isDragging) return;
+    
+    const borderZone = detectBorderZone(e);
+    if (borderZone === 'top' || borderZone === 'bottom') setCursorType('ns-resize');
+    else setCursorType('grab');
   };
 
   const handleMouseDown = e => {
@@ -161,7 +183,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         height: `${event.height}px`,
         backgroundColor: event.backgroundColor,
         width: event.width,
-        cursor: isDragging ? 'grabbing' : 'grab',
+        cursor: isDragging ? 'grabbing' : cursorType,
         ...dragging,
         zIndex: isDragging ? 1000 : 'auto',
         display: 'flex',
