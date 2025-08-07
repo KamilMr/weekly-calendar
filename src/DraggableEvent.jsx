@@ -80,36 +80,46 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   };
 
 
-  // TODO: Add comments explaining logic to this function 
+  /**
+   * Handles mouse movement during drag and resize operations
+   * This function is called continuously while the user moves the mouse after initiating a drag or resize
+   */
   const handleMouseMove = useCallback(e => {
+    // Exit early if not in an active drag or resize operation
     if (!isDragging && !isResizing) return;
     
+    // Calculate movement deltas from the initial mouse down position
     const deltaX = e.clientX - dragStart.x;
     const deltaY = e.clientY - dragStart.y;
     const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
+    // Mark as moved once threshold is exceeded to distinguish from clicks
     if (totalMovement > DRAG_THRESHOLD) setHasMoved(true);
 
     if (isResizing) {
-      // Handle resizing
+      // RESIZE MODE: Adjust event height and position based on resize direction
       let newTop = initialPosition.top;
       let newHeight = initialHeight;
       
       if (resizeMode === 'top') {
-        // Resize from top: change both position and height
+        // Resizing from top edge: move top position and adjust height inversely
         newTop = initialPosition.top + deltaY;
         newHeight = initialHeight - deltaY;
-      } else if (resizeMode === 'bottom') newHeight = initialHeight + deltaY;
+      } else if (resizeMode === 'bottom') {
+        // Resizing from bottom edge: keep top fixed, only change height
+        newHeight = initialHeight + deltaY;
+      }
       
-      // Minimum height constraint
+      // Enforce minimum height constraint to prevent events from becoming too small
       const minHeight = 20;
       if (newHeight < minHeight) {
         if (resizeMode === 'top') newTop = initialPosition.top + (initialHeight - minHeight);
         newHeight = minHeight;
       }
       
-      // Update the event in the engine 
+      // Update the event through the engine which handles time calculations and snapping
       if (resizeMode === 'top') {
+        // Update top position, engine recalculates start time and snaps to time grid
         columnObserver.updateEventTop(event.id, newTop, (updatedEvent) => {
           setDraggingEvent({
             ...draggingEvent,
@@ -120,6 +130,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
           });
         });
       } else if (resizeMode === 'bottom') {
+        // Update bottom position, engine recalculates end time and snaps to time grid
         const newBottom = initialPosition.top + initialHeight + deltaY;
         columnObserver.updateEventBottom(event.id, newBottom, (updatedEvent) => {
           setDraggingEvent({
@@ -131,15 +142,18 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         });
       }
 
-      // Here goes dragging 
     } else if (isDragging) {
-      // Handle dragging
+      // DRAG MODE: Move event position and handle column changes
+      
+      // Detect which column the event is currently over
       const hoveredColumn = detectHoveredColumn(eventRef.current, columns);
       if (hoveredColumn) setCurrentColumn(hoveredColumn);
+      
+      // Track the original source column for cleanup operations
       if (!sourceColumnId.current && hoveredColumn)
         sourceColumnId.current = hoveredColumn.id;
 
-      // updating event 
+      // Update event position through engine, which handles time/date calculations
       columnObserver.updateEvent(
         event.id,
         {
@@ -148,6 +162,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
           currentColumnId: hoveredColumn?.id,
         },
         ({left, top, width, startDate, endDate}) => {
+          // Update React state with engine-calculated values
           setDraggingEvent({
             ...draggingEvent,
             left,
@@ -159,6 +174,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         },
       );
 
+      // Provide visual feedback by highlighting the hovered column
       columns.forEach(column => {
         column.style.backgroundColor =
           column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
