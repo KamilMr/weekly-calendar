@@ -11,7 +11,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const [dragStart, setDragStart] = useState({x: 0, y: 0});
   const [initialPosition, setInitialPosition] = useState({left: 0, top: 0});
   const [initialHeight, setInitialHeight] = useState(0);
-  const [dragging, setDragging] = useState({top: 0, left: 0});
+  const [draggingEvent, setDraggingEvent] = useState({top: 0, left: 0});
   const [hasMoved, setHasMoved] = useState(false);
   const [currentColumn, setCurrentColumn] = useState(null);
   const [cursorType, setCursorType] = useState('grab');
@@ -20,7 +20,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
 
   // Function to update React state from engine data
   const updateEventState = eventData => {
-    setDragging({
+    setDraggingEvent({
       ...eventData,
       left: eventData.left + 'px',
       top: eventData.top + 'px',
@@ -81,7 +81,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   };
 
   const handleEventMouseMove = (e) => {
-    if (isDragging) return;
+    if (isDragging || isResizing) return;
     
     const borderZone = detectBorderZone(e);
     if (borderZone === 'top' || borderZone === 'bottom') setCursorType('ns-resize');
@@ -109,69 +109,127 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const getHour = date => date?.toTimeString().split(' ')[0]
 
   const handleMouseMove = useCallback(e => {
-    if (!isDragging) return;
+    if (!isDragging && !isResizing) return;
+    
     const deltaX = e.clientX - dragStart.x;
     const deltaY = e.clientY - dragStart.y;
     const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     if (totalMovement > DRAG_THRESHOLD) setHasMoved(true);
 
-    const hoveredColumn = detectHoveredColumn(eventRef.current);
-    if (hoveredColumn) setCurrentColumn(hoveredColumn);
-    if (!sourceColumnId.current && hoveredColumn)
-      sourceColumnId.current = hoveredColumn.id;
-
-    columnObserver.updateEvent(
-      event.id,
-      {
-        left: initialPosition.left + deltaX,
-        top: initialPosition.top + deltaY,
-        currentColumnId: hoveredColumn?.id,
-      },
-      ({left, top, width, startDate, endDate}) => {
-        setDragging({
-          ...dragging,
-          left,
-          top,
-          ...(width && {width}),
-          ...(startDate && {startDate}),
-          ...(endDate && {endDate}),
+    if (isResizing) {
+      // Handle resizing
+      let newTop = initialPosition.top;
+      let newHeight = initialHeight;
+      
+      if (resizeMode === 'top') {
+        // Resize from top: change both position and height
+        newTop = initialPosition.top + deltaY;
+        newHeight = initialHeight - deltaY;
+      } else if (resizeMode === 'bottom') newHeight = initialHeight + deltaY;
+      
+      // Minimum height constraint
+      const minHeight = 20;
+      if (newHeight < minHeight) {
+        if (resizeMode === 'top') newTop = initialPosition.top + (initialHeight - minHeight);
+        newHeight = minHeight;
+      }
+      
+      // Update the event in the engine 
+      if (resizeMode === 'top') {
+        columnObserver.updateEventTop(event.id, newTop, (updatedEvent) => {
+          setDraggingEvent({
+            ...draggingEvent,
+            top: updatedEvent.top + 'px',
+            height: updatedEvent.height + 'px',
+            ...(updatedEvent.startDate && {startDate: updatedEvent.startDate}),
+            ...(updatedEvent.endDate && {endDate: updatedEvent.endDate}),
+          });
         });
-      },
-    );
+      } else if (resizeMode === 'bottom') {
+        const newBottom = initialPosition.top + initialHeight + deltaY;
+        columnObserver.updateEventBottom(event.id, newBottom, (updatedEvent) => {
+          setDraggingEvent({
+            ...draggingEvent,
+            height: updatedEvent.height + 'px',
+            ...(updatedEvent.startDate && {startDate: updatedEvent.startDate}),
+            ...(updatedEvent.endDate && {endDate: updatedEvent.endDate}),
+          });
+        });
+      }
 
-    columns.forEach(column => {
-      column.style.backgroundColor =
-        column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
-    });
-  }, [isDragging, dragStart.x, dragStart.y, initialPosition.left, initialPosition.top, dragging, columnObserver, event.id, columns]);
+      // Here goes dragging 
+    } else if (isDragging) {
+      // Handle dragging
+      const hoveredColumn = detectHoveredColumn(eventRef.current);
+      if (hoveredColumn) setCurrentColumn(hoveredColumn);
+      if (!sourceColumnId.current && hoveredColumn)
+        sourceColumnId.current = hoveredColumn.id;
 
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-
-    if (currentColumn && hasMoved && columnObserver) {
-      columnObserver.calibrateEvent(
+      // updating event 
+      columnObserver.updateEvent(
         event.id,
-        sourceColumnId.current !== currentColumn ? sourceColumnId.current : null,
+        {
+          left: initialPosition.left + deltaX,
+          top: initialPosition.top + deltaY,
+          currentColumnId: hoveredColumn?.id,
+        },
+        ({left, top, width, startDate, endDate}) => {
+          setDraggingEvent({
+            ...draggingEvent,
+            left,
+            top,
+            ...(width && {width}),
+            ...(startDate && {startDate}),
+            ...(endDate && {endDate}),
+          });
+        },
       );
-    } else if (!hasMoved) {
-      setDragging({
-        ...dragging,
-        left: initialPosition.left + 'px',
-        top: initialPosition.top + 'px',
+
+      columns.forEach(column => {
+        column.style.backgroundColor =
+          column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
       });
     }
+  }, [
+      isDragging, isResizing, resizeMode, dragStart.x, dragStart.y, initialPosition.left, initialPosition.top, initialHeight, draggingEvent, columnObserver, event.id, columns]);
 
-    columns.forEach(column => {
-      column.style.backgroundColor = COLORS.DEFAULT;
-    });
-    sourceColumnId.current = null;
-    setCurrentColumn(null);
-  }, [currentColumn, hasMoved, columnObserver, event.id, dragging, initialPosition.left, initialPosition.top, columns]);
+  const handleMouseUp = useCallback(() => {
+    if (isResizing) {
+      setIsResizing(false);
+      setResizeMode(null);
+      
+      if (hasMoved && columnObserver) {
+        // Calibrate the resized event to snap to proper time boundaries
+        columnObserver.calibrateEvent(event.id, null);
+      }
+    } else if (isDragging) {
+      setIsDragging(false);
 
-  // Handle document-level mouse events during drag to prevent losing grip
+      if (currentColumn && hasMoved && columnObserver) {
+        columnObserver.calibrateEvent(
+          event.id,
+          sourceColumnId.current !== currentColumn ? sourceColumnId.current : null,
+        );
+      } else if (!hasMoved) {
+        setDraggingEvent({
+          ...draggingEvent,
+          left: initialPosition.left + 'px',
+          top: initialPosition.top + 'px',
+        });
+      }
+
+      columns.forEach(column => {
+        column.style.backgroundColor = COLORS.DEFAULT;
+      });
+      sourceColumnId.current = null;
+      setCurrentColumn(null);
+    }
+  }, [isResizing, isDragging, currentColumn, hasMoved, columnObserver, event.id, draggingEvent, initialPosition.left, initialPosition.top, columns]);
+
+  // Handle document-level mouse events during drag/resize to prevent losing grip
   useEffect(() => {
-    if (isDragging) {
+    if (isDragging || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     }
@@ -180,7 +238,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
   return (
     <div
@@ -192,16 +250,16 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         height: `${event.height}px`,
         backgroundColor: event.backgroundColor,
         width: event.width,
-        cursor: isDragging ? 'grabbing' : cursorType,
-        ...dragging,
+        cursor: isDragging ? 'grabbing' : isResizing ? 'ns-resize' : cursorType,
+        ...draggingEvent,
         zIndex: isDragging ? 1000 : 'auto',
         display: 'flex',
         flexDirection: 'column',
       }}
       onMouseDown={handleMouseDown}
     >
-      <span style={{fontSize: '0.75em'}}>{getHour(dragging.startDate)}</span>
-      <span style={{fontSize: '0.75em'}}>{getHour(dragging.endDate)}</span>
+      <span style={{fontSize: '0.75em'}}>{getHour(draggingEvent.startDate)}</span>
+      <span style={{fontSize: '0.75em'}}>{getHour(draggingEvent.endDate)}</span>
     </div>
   );
 };
