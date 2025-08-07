@@ -183,25 +183,34 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   }, [
       isDragging, isResizing, resizeMode, dragStart.x, dragStart.y, initialPosition.left, initialPosition.top, initialHeight, draggingEvent, columnObserver, event.id, columns]);
 
-  // TODO: Add comments explaining logic to this function 
+  /**
+   * Handles mouse up events to finalize drag/resize operations
+   * Called when user releases mouse button, completing the interaction
+   */
   const handleMouseUp = useCallback(() => {
     if (isResizing) {
+      // RESIZE COMPLETION: Clean up resize state and finalize position
       setIsResizing(false);
       setResizeMode(null);
       
       if (hasMoved && columnObserver) {
         // Calibrate the resized event to snap to proper time boundaries
+        // No source column needed since resize happens within same column
         columnObserver.calibrateEvent(event.id, null);
       }
     } else if (isDragging) {
+      // DRAG COMPLETION: Clean up drag state and finalize position
       setIsDragging(false);
 
       if (currentColumn && hasMoved && columnObserver) {
+        // Calibrate event position and handle column changes
+        // Pass source column if event moved to a different column for cleanup
         columnObserver.calibrateEvent(
           event.id,
           sourceColumnId.current !== currentColumn ? sourceColumnId.current : null,
         );
       } else if (!hasMoved) {
+        // If no actual movement occurred, reset to original position (was just a click)
         setDraggingEvent({
           ...draggingEvent,
           left: initialPosition.left + 'px',
@@ -209,9 +218,12 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         });
       }
 
+      // Remove visual feedback from all columns
       columns.forEach(column => {
         column.style.backgroundColor = COLORS.DEFAULT;
       });
+      
+      // Reset drag tracking state
       sourceColumnId.current = null;
       setCurrentColumn(null);
     }
