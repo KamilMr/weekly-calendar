@@ -305,8 +305,17 @@ export default class ColumnObserver {
 
     const {eventData, columnId, eventIndex} = found;
 
-    const dateAndPosition = this._translateColumnPositionToDate(top, this.columns[columnId].events[eventIndex].height, columnId);
-    const {startDate, endDate, top: correctedTop, bottom: correctedBottom} = dateAndPosition;
+    const dateAndPosition = this._translateColumnPositionToDate(
+      top,
+      this.columns[columnId].events[eventIndex].height,
+      columnId,
+    );
+    const {
+      startDate,
+      endDate,
+      top: correctedTop,
+      bottom: correctedBottom,
+    } = dateAndPosition;
     // Check if event is in current column
     if (columnId === currentColumnId) {
       // Override left and top in same column with corrected positions
@@ -344,40 +353,45 @@ export default class ColumnObserver {
 
     const {columnId, eventIndex} = found;
     const event = this.columns[columnId].events[eventIndex];
-    
+
     // Keep original end time/bottom fixed
     const originalEndDate = new Date(event.endDate);
-    
+
     // Calculate new height based on new top and original bottom
     const newHeight = event.bottom - newTop;
-    
+
     // Minimum height constraint
     const minHeight = 20;
     const finalTop = newHeight < minHeight ? event.bottom - minHeight : newTop;
     const finalHeight = newHeight < minHeight ? minHeight : newHeight;
 
     // Translate new top position back to start date, keeping original end date
-    const dateAndPosition = this._translateColumnPositionToDate(finalTop, finalHeight, columnId);
-    
+    const dateAndPosition = this._translateColumnPositionToDate(
+      finalTop,
+      finalHeight,
+      columnId,
+    );
+
     if (dateAndPosition) {
       let {startDate, top: correctedTop} = dateAndPosition;
-      
+
       // If startDate is on a different day than endDate, clamp to midnight of endDate's day
       if (startDate.toDateString() !== originalEndDate.toDateString()) {
         startDate = new Date(originalEndDate);
         startDate.setHours(0, 0, 0, 0);
-        
+
         // Recalculate correctedTop for midnight (top of the day)
         correctedTop = 0;
       }
-      
+
       // Update with new start date but keep original end date
       this.columns[columnId].events[eventIndex].startDate = startDate;
       this.columns[columnId].events[eventIndex].endDate = originalEndDate;
       this.columns[columnId].events[eventIndex].top = correctedTop;
-      
+
       // Keep original bottom and recalculate height based on corrected top
-      this.columns[columnId].events[eventIndex].height = event.bottom - correctedTop;
+      this.columns[columnId].events[eventIndex].height =
+        event.bottom - correctedTop;
     }
 
     cb?.(this.columns[columnId].events[eventIndex]);
@@ -390,56 +404,58 @@ export default class ColumnObserver {
 
     const {columnId, eventIndex} = found;
     const event = this.columns[columnId].events[eventIndex];
-    
+
     // Keep original start time/top fixed
     const originalStartDate = new Date(event.startDate);
-    
+
     // Calculate new height based on original top and new bottom
     const newHeight = newBottom - event.top;
-    
+
     // Minimum height constraint
     const minHeight = 20;
-    const finalBottom = newHeight < minHeight ? event.top + minHeight : newBottom;
+    const finalBottom =
+      newHeight < minHeight ? event.top + minHeight : newBottom;
 
     // Get column data for calculations
     const columnData = this.columns[columnId];
     const columnHeight = columnData._height || 600;
     const pixelsPerHour = columnHeight / 24;
-    
+
     // Calculate end time from bottom position and snap it
     const endHour = finalBottom / pixelsPerHour;
     const endHourInt = Math.floor(endHour);
     const rawEndMinutes = (endHour - endHourInt) * 60;
     let endMinutes = snapToNearestMinutes(rawEndMinutes, 15);
     let finalEndHour = endHourInt;
-    
+
     // Handle minute overflow
     if (endMinutes >= 60) {
       finalEndHour += 1;
       endMinutes = 0;
     }
-    
+
     if (finalEndHour > 23) {
       finalEndHour = 23;
       endMinutes = 59;
     }
-    console.log(finalEndHour, endMinutes)
+
     // Extract date from columnId
     const dateMatch = columnId.match(/(\d{4}-\d{2}-\d{2})/);
     if (dateMatch) {
       const baseDate = new Date(dateMatch[1]);
-      
+
       baseDate.setHours(finalEndHour, endMinutes, 0, 0);
-      
+
       // Calculate corrected bottom position from snapped time
       const snappedEndHour = finalEndHour + endMinutes / 60;
       const correctedBottom = snappedEndHour * pixelsPerHour;
-      
+
       // Update with snapped values
       this.columns[columnId].events[eventIndex].startDate = originalStartDate;
       this.columns[columnId].events[eventIndex].endDate = baseDate;
       this.columns[columnId].events[eventIndex].bottom = correctedBottom;
-      this.columns[columnId].events[eventIndex].height = correctedBottom - event.top;
+      this.columns[columnId].events[eventIndex].height =
+        correctedBottom - event.top;
     }
 
     cb?.(this.columns[columnId].events[eventIndex]);

@@ -51,19 +51,18 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     };
   }, [columnObserver]);
 
-
-
-  const handleEventMouseMove = (e) => {
+  const handleEventMouseMove = e => {
     if (isDragging || isResizing) return;
-    
+
     const borderZone = detectBorderZone(e, eventRef, RESIZE_ZONE_HEIGHT);
-    if (borderZone === 'top' || borderZone === 'bottom') setCursorType('ns-resize');
+    if (borderZone === 'top' || borderZone === 'bottom')
+      setCursorType('ns-resize');
     else setCursorType('grab');
   };
 
   const handleMouseDown = e => {
     e.preventDefault();
-    
+
     const borderZone = detectBorderZone(e, eventRef, RESIZE_ZONE_HEIGHT);
     if (borderZone) {
       setIsResizing(true);
@@ -79,109 +78,131 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     });
   };
 
-
   /**
    * Handles mouse movement during drag and resize operations
    * This function is called continuously while the user moves the mouse after initiating a drag or resize
    */
-  const handleMouseMove = useCallback(e => {
-    // Exit early if not in an active drag or resize operation
-    if (!isDragging && !isResizing) return;
-    
-    // Calculate movement deltas from the initial mouse down position
-    const deltaX = e.clientX - dragStart.x;
-    const deltaY = e.clientY - dragStart.y;
-    const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  const handleMouseMove = useCallback(
+    e => {
+      // Exit early if not in an active drag or resize operation
+      if (!isDragging && !isResizing) return;
 
-    // Mark as moved once threshold is exceeded to distinguish from clicks
-    if (totalMovement > DRAG_THRESHOLD) setHasMoved(true);
+      // Calculate movement deltas from the initial mouse down position
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    if (isResizing) {
-      // RESIZE MODE: Adjust event height and position based on resize direction
-      let newTop = initialPosition.top;
-      let newHeight = initialHeight;
-      
-      if (resizeMode === 'top') {
-        // Resizing from top edge: move top position and adjust height inversely
-        newTop = initialPosition.top + deltaY;
-        newHeight = initialHeight - deltaY;
-      } else if (resizeMode === 'bottom') {
-        // Resizing from bottom edge: keep top fixed, only change height
-        newHeight = initialHeight + deltaY;
-      }
-      
-      // Enforce minimum height constraint to prevent events from becoming too small
-      const minHeight = 20;
-      if (newHeight < minHeight) {
-        if (resizeMode === 'top') newTop = initialPosition.top + (initialHeight - minHeight);
-        newHeight = minHeight;
-      }
-      
-      // Update the event through the engine which handles time calculations and snapping
-      if (resizeMode === 'top') {
-        // Update top position, engine recalculates start time and snaps to time grid
-        columnObserver.updateEventTop(event.id, newTop, (updatedEvent) => {
-          setDraggingEvent({
-            ...draggingEvent,
-            top: updatedEvent.top + 'px',
-            height: updatedEvent.height + 'px',
-            ...(updatedEvent.startDate && {startDate: updatedEvent.startDate}),
-            ...(updatedEvent.endDate && {endDate: updatedEvent.endDate}),
+      // Mark as moved once threshold is exceeded to distinguish from clicks
+      if (totalMovement > DRAG_THRESHOLD) setHasMoved(true);
+
+      if (isResizing) {
+        // RESIZE MODE: Adjust event height and position based on resize direction
+        let newTop = initialPosition.top;
+        let newHeight = initialHeight;
+
+        if (resizeMode === 'top') {
+          // Resizing from top edge: move top position and adjust height inversely
+          newTop = initialPosition.top + deltaY;
+          newHeight = initialHeight - deltaY;
+        } else if (resizeMode === 'bottom') {
+          // Resizing from bottom edge: keep top fixed, only change height
+          newHeight = initialHeight + deltaY;
+        }
+
+        // Enforce minimum height constraint to prevent events from becoming too small
+        const minHeight = 20;
+        if (newHeight < minHeight) {
+          if (resizeMode === 'top')
+            newTop = initialPosition.top + (initialHeight - minHeight);
+          newHeight = minHeight;
+        }
+
+        // Update the event through the engine which handles time calculations and snapping
+        if (resizeMode === 'top') {
+          // Update top position, engine recalculates start time and snaps to time grid
+          columnObserver.updateEventTop(event.id, newTop, updatedEvent => {
+            setDraggingEvent({
+              ...draggingEvent,
+              top: updatedEvent.top + 'px',
+              height: updatedEvent.height + 'px',
+              ...(updatedEvent.startDate && {
+                startDate: updatedEvent.startDate,
+              }),
+              ...(updatedEvent.endDate && {endDate: updatedEvent.endDate}),
+            });
           });
+        } else if (resizeMode === 'bottom') {
+          // Update bottom position, engine recalculates end time and snaps to time grid
+          const newBottom = initialPosition.top + initialHeight + deltaY;
+          columnObserver.updateEventBottom(
+            event.id,
+            newBottom,
+            updatedEvent => {
+              setDraggingEvent({
+                ...draggingEvent,
+                height: updatedEvent.height + 'px',
+                ...(updatedEvent.startDate && {
+                  startDate: updatedEvent.startDate,
+                }),
+                ...(updatedEvent.endDate && {endDate: updatedEvent.endDate}),
+              });
+            },
+          );
+        }
+      } else if (isDragging) {
+        // DRAG MODE: Move event position and handle column changes
+
+        // Detect which column the event is currently over
+        const hoveredColumn = detectHoveredColumn(eventRef.current, columns);
+        if (hoveredColumn) setCurrentColumn(hoveredColumn);
+
+        // Track the original source column for cleanup operations
+        if (!sourceColumnId.current && hoveredColumn)
+          sourceColumnId.current = hoveredColumn.id;
+
+        // Update event position through engine, which handles time/date calculations
+        columnObserver.updateEvent(
+          event.id,
+          {
+            left: initialPosition.left + deltaX,
+            top: initialPosition.top + deltaY,
+            currentColumnId: hoveredColumn?.id,
+          },
+          ({left, top, width, startDate, endDate}) => {
+            // Update React state with engine-calculated values
+            setDraggingEvent({
+              ...draggingEvent,
+              left,
+              top,
+              ...(width && {width}),
+              ...(startDate && {startDate}),
+              ...(endDate && {endDate}),
+            });
+          },
+        );
+
+        // Provide visual feedback by highlighting the hovered column
+        columns.forEach(column => {
+          column.style.backgroundColor =
+            column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
         });
-      } else if (resizeMode === 'bottom') {
-        // Update bottom position, engine recalculates end time and snaps to time grid
-        const newBottom = initialPosition.top + initialHeight + deltaY;
-        columnObserver.updateEventBottom(event.id, newBottom, (updatedEvent) => {
-          setDraggingEvent({
-            ...draggingEvent,
-            height: updatedEvent.height + 'px',
-            ...(updatedEvent.startDate && {startDate: updatedEvent.startDate}),
-            ...(updatedEvent.endDate && {endDate: updatedEvent.endDate}),
-          });
-        });
       }
-
-    } else if (isDragging) {
-      // DRAG MODE: Move event position and handle column changes
-      
-      // Detect which column the event is currently over
-      const hoveredColumn = detectHoveredColumn(eventRef.current, columns);
-      if (hoveredColumn) setCurrentColumn(hoveredColumn);
-      
-      // Track the original source column for cleanup operations
-      if (!sourceColumnId.current && hoveredColumn)
-        sourceColumnId.current = hoveredColumn.id;
-
-      // Update event position through engine, which handles time/date calculations
-      columnObserver.updateEvent(
-        event.id,
-        {
-          left: initialPosition.left + deltaX,
-          top: initialPosition.top + deltaY,
-          currentColumnId: hoveredColumn?.id,
-        },
-        ({left, top, width, startDate, endDate}) => {
-          // Update React state with engine-calculated values
-          setDraggingEvent({
-            ...draggingEvent,
-            left,
-            top,
-            ...(width && {width}),
-            ...(startDate && {startDate}),
-            ...(endDate && {endDate}),
-          });
-        },
-      );
-
-      // Provide visual feedback by highlighting the hovered column
-      columns.forEach(column => {
-        column.style.backgroundColor =
-          column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
-      });
-    }
-  }, [
-      isDragging, isResizing, resizeMode, dragStart.x, dragStart.y, initialPosition.left, initialPosition.top, initialHeight, draggingEvent, columnObserver, event.id, columns]);
+    },
+    [
+      isDragging,
+      isResizing,
+      resizeMode,
+      dragStart.x,
+      dragStart.y,
+      initialPosition.left,
+      initialPosition.top,
+      initialHeight,
+      draggingEvent,
+      columnObserver,
+      event.id,
+      columns,
+    ],
+  );
 
   /**
    * Handles mouse up events to finalize drag/resize operations
@@ -192,7 +213,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       // RESIZE COMPLETION: Clean up resize state and finalize position
       setIsResizing(false);
       setResizeMode(null);
-      
+
       if (hasMoved && columnObserver) {
         // Calibrate the resized event to snap to proper time boundaries
         // No source column needed since resize happens within same column
@@ -207,7 +228,9 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         // Pass source column if event moved to a different column for cleanup
         columnObserver.calibrateEvent(
           event.id,
-          sourceColumnId.current !== currentColumn ? sourceColumnId.current : null,
+          sourceColumnId.current !== currentColumn
+            ? sourceColumnId.current
+            : null,
         );
       } else if (!hasMoved) {
         // If no actual movement occurred, reset to original position (was just a click)
@@ -222,12 +245,23 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       columns.forEach(column => {
         column.style.backgroundColor = COLORS.DEFAULT;
       });
-      
+
       // Reset drag tracking state
       sourceColumnId.current = null;
       setCurrentColumn(null);
     }
-  }, [isResizing, isDragging, currentColumn, hasMoved, columnObserver, event.id, draggingEvent, initialPosition.left, initialPosition.top, columns]);
+  }, [
+    isResizing,
+    isDragging,
+    currentColumn,
+    hasMoved,
+    columnObserver,
+    event.id,
+    draggingEvent,
+    initialPosition.left,
+    initialPosition.top,
+    columns,
+  ]);
 
   // Handle document-level mouse events during drag/resize to prevent losing grip
   useEffect(() => {
@@ -260,7 +294,9 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       }}
       onMouseDown={handleMouseDown}
     >
-      <span style={{fontSize: '0.75em'}}>{getHour(draggingEvent.startDate)}</span>
+      <span style={{fontSize: '0.75em'}}>
+        {getHour(draggingEvent.startDate)}
+      </span>
       <span style={{fontSize: '0.75em'}}>{getHour(draggingEvent.endDate)}</span>
     </div>
   );
