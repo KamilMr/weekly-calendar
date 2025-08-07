@@ -140,7 +140,7 @@ const detectBorderZone = (e, eventRef, resizeZoneHeight) => {
   return null;
 };
 
-const getHour = date => date?.toTimeString().split(' ')[0];
+const getHour = date => date?.toTimeString().split(' ')[0].split(':').slice(0, 2).join(':');
 
 export {
   calcDOMElem,
