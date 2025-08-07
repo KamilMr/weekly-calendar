@@ -129,10 +129,22 @@ const detectHoveredColumn = (element, columns) => {
   return null;
 };
 
+const detectBorderZone = (e, eventRef, resizeZoneHeight) => {
+  if (!eventRef.current) return null;
+  
+  const rect = eventRef.current.getBoundingClientRect();
+  const mouseY = e.clientY - rect.top;
+  
+  if (mouseY <= resizeZoneHeight) return 'top';
+  else if (mouseY >= rect.height - resizeZoneHeight) return 'bottom';
+  return null;
+};
+
 export {
   calcDOMElem,
   createInitialEvents,
   date as dateUtils,
+  detectBorderZone,
   detectHoveredColumn,
   generateColorFromNumber,
   get3CharId,

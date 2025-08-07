@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {COLORS} from './engine';
-import {detectHoveredColumn} from './helpers.js';
+import {detectBorderZone, detectHoveredColumn} from './helpers.js';
 
 const DRAG_THRESHOLD = 5;
 const RESIZE_ZONE_HEIGHT = 8;
@@ -52,22 +52,11 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   }, [columnObserver]);
 
 
-  // TODO: Move function outside to helpers.js file
-  const detectBorderZone = (e) => {
-    if (!eventRef.current) return null;
-    
-    const rect = eventRef.current.getBoundingClientRect();
-    const mouseY = e.clientY - rect.top;
-    
-    if (mouseY <= RESIZE_ZONE_HEIGHT) return 'top';
-    else if (mouseY >= rect.height - RESIZE_ZONE_HEIGHT) return 'bottom';
-    return null;
-  };
 
   const handleEventMouseMove = (e) => {
     if (isDragging || isResizing) return;
     
-    const borderZone = detectBorderZone(e);
+    const borderZone = detectBorderZone(e, eventRef, RESIZE_ZONE_HEIGHT);
     if (borderZone === 'top' || borderZone === 'bottom') setCursorType('ns-resize');
     else setCursorType('grab');
   };
@@ -75,7 +64,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   const handleMouseDown = e => {
     e.preventDefault();
     
-    const borderZone = detectBorderZone(e);
+    const borderZone = detectBorderZone(e, eventRef, RESIZE_ZONE_HEIGHT);
     if (borderZone) {
       setIsResizing(true);
       setResizeMode(borderZone);
