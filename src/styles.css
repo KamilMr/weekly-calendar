@@ -33,5 +33,11 @@ body {
 .event {
   position: absolute;
   cursor: grab;
-  background-color: #930c0c;
+  background-color: #fdd835;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.event:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
