@@ -110,10 +110,30 @@ const snapToNearestMinutes = (minutes, snapInterval = 5) => {
   return Math.round(minutes / snapInterval) * snapInterval;
 };
 
+const detectHoveredColumn = (element, columns) => {
+  const draggedRect = element.getBoundingClientRect();
+  const draggedCenterX = draggedRect.left + draggedRect.width / 2;
+
+  for (let column of columns) {
+    const boxRect = column.getBoundingClientRect();
+    if (draggedCenterX >= boxRect.left && draggedCenterX <= boxRect.right) {
+      const draggedTop = draggedRect.top;
+      const draggedBottom = draggedRect.bottom;
+      const columnTop = boxRect.top;
+      const columnBottom = boxRect.bottom;
+      if (draggedTop >= columnTop && draggedBottom <= columnBottom) {
+        return column;
+      }
+    }
+  }
+  return null;
+};
+
 export {
   calcDOMElem,
   createInitialEvents,
   date as dateUtils,
+  detectHoveredColumn,
   generateColorFromNumber,
   get3CharId,
   snapToNearestMinutes,

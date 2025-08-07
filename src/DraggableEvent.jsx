@@ -1,5 +1,6 @@
 import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {COLORS} from './engine';
+import {detectHoveredColumn} from './helpers.js';
 
 const DRAG_THRESHOLD = 5;
 const RESIZE_ZONE_HEIGHT = 8;
@@ -50,25 +51,8 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     };
   }, [columnObserver]);
 
-  const detectHoveredColumn = element => {
-    const draggedRect = element.getBoundingClientRect();
-    const draggedCenterX = draggedRect.left + draggedRect.width / 2;
 
-    for (let column of columns) {
-      const boxRect = column.getBoundingClientRect();
-      if (draggedCenterX >= boxRect.left && draggedCenterX <= boxRect.right) {
-        const draggedTop = draggedRect.top;
-        const draggedBottom = draggedRect.bottom;
-        const columnTop = boxRect.top;
-        const columnBottom = boxRect.bottom;
-        if (draggedTop >= columnTop && draggedBottom <= columnBottom) {
-          return column;
-        }
-      }
-    }
-    return null;
-  };
-
+  // TODO: Move function outside to helpers.js file
   const detectBorderZone = (e) => {
     if (!eventRef.current) return null;
     
@@ -106,8 +90,10 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     });
   };
 
+  // TODO: Move function outside to helpers.js file
   const getHour = date => date?.toTimeString().split(' ')[0]
 
+  // TODO: Add comments explaining logic to this function 
   const handleMouseMove = useCallback(e => {
     if (!isDragging && !isResizing) return;
     
@@ -161,7 +147,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
       // Here goes dragging 
     } else if (isDragging) {
       // Handle dragging
-      const hoveredColumn = detectHoveredColumn(eventRef.current);
+      const hoveredColumn = detectHoveredColumn(eventRef.current, columns);
       if (hoveredColumn) setCurrentColumn(hoveredColumn);
       if (!sourceColumnId.current && hoveredColumn)
         sourceColumnId.current = hoveredColumn.id;
@@ -194,6 +180,7 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
   }, [
       isDragging, isResizing, resizeMode, dragStart.x, dragStart.y, initialPosition.left, initialPosition.top, initialHeight, draggingEvent, columnObserver, event.id, columns]);
 
+  // TODO: Add comments explaining logic to this function 
   const handleMouseUp = useCallback(() => {
     if (isResizing) {
       setIsResizing(false);
