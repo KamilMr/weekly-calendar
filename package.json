@@ -11,14 +11,14 @@
   "description": "Weekly calendar",
   "homepage": "https://github.com/KamilMr/weekly-calendar#readme",
   "scripts": {
-    "dev": "concurrently --names \"VITE,PRETTIER\" --prefix-colors \"cyan,magenta\" \"vite\" \"prettier --write . --watch\"",
+    "dev": "concurrently --names \"VITE,PRETTIER\" --prefix-colors \"cyan,magenta\" \"vite\" \"pnpm format:watch\"",
     "dev:only": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "test": "jest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "format:watch": "prettier --write . --watch"
+    "format:watch": "onchange \"**/*\" -- prettier --write --ignore-unknown {{changed}}"
   },
   "bugs": {
     "url": "https://github.com/KamilMr/weekly-calendar/issues"
@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.7.0",
+    "onchange": "^7.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "vite": "^7.0.5"
