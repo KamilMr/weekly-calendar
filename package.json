@@ -11,12 +11,14 @@
   "description": "Weekly calendar",
   "homepage": "https://github.com/KamilMr/weekly-calendar#readme",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently --names \"VITE,PRETTIER\" --prefix-colors \"cyan,magenta\" \"vite\" \"prettier --write . --watch\"",
+    "dev:only": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "test": "jest",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "format:watch": "prettier --write . --watch"
   },
   "bugs": {
     "url": "https://github.com/KamilMr/weekly-calendar/issues"
@@ -33,6 +35,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "babel-jest": "^30.0.5",
+    "concurrently": "^9.2.0",
     "jest": "^30.0.5",
     "live-server": "^1.2.2",
     "prettier": "^3.6.2"
