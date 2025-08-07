@@ -140,6 +140,8 @@ const detectBorderZone = (e, eventRef, resizeZoneHeight) => {
   return null;
 };
 
+const getHour = date => date?.toTimeString().split(' ')[0];
+
 export {
   calcDOMElem,
   createInitialEvents,
@@ -148,5 +150,6 @@ export {
   detectHoveredColumn,
   generateColorFromNumber,
   get3CharId,
+  getHour,
   snapToNearestMinutes,
 };

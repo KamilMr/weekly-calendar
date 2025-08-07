@@ -1,6 +1,6 @@
 import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {COLORS} from './engine';
-import {detectBorderZone, detectHoveredColumn} from './helpers.js';
+import {detectBorderZone, detectHoveredColumn, getHour} from './helpers.js';
 
 const DRAG_THRESHOLD = 5;
 const RESIZE_ZONE_HEIGHT = 8;
@@ -79,8 +79,6 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     });
   };
 
-  // TODO: Move function outside to helpers.js file
-  const getHour = date => date?.toTimeString().split(' ')[0]
 
   // TODO: Add comments explaining logic to this function 
   const handleMouseMove = useCallback(e => {
