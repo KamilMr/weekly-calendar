@@ -5,7 +5,13 @@ import {detectBorderZone, detectHoveredColumn, getHour} from './helpers.js';
 const DRAG_THRESHOLD = 5;
 const RESIZE_ZONE_HEIGHT = 8;
 
-const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
+const DraggableEvent = ({
+  event,
+  columnObserver,
+  columns,
+  onEventMove,
+  title = 'Event',
+}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [resizeMode, setResizeMode] = useState(null); // 'top' or 'bottom'
@@ -182,10 +188,10 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         );
 
         // Provide visual feedback by highlighting the hovered column
-        columns.forEach(column => {
-          column.style.backgroundColor =
-            column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
-        });
+        // columns.forEach(column => {
+        //   column.style.backgroundColor =
+        //     column === hoveredColumn ? COLORS.HOVER_BLUE : COLORS.DEFAULT;
+        // });
       }
     },
     [
@@ -276,6 +282,8 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
     };
   }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
+  const isLessThen30 = parseInt(draggingEvent.height) < 30;
+
   return (
     <div
       ref={eventRef}
@@ -291,13 +299,42 @@ const DraggableEvent = ({event, columnObserver, columns, onEventMove}) => {
         zIndex: isDragging ? 1000 : 'auto',
         display: 'flex',
         flexDirection: 'column',
+        padding: '4px 6px',
+        borderRadius: '4px',
+        border: '1px solid rgba(0, 0, 0, 0.5)',
+        boxShadow: isDragging
+          ? '0 4px 12px rgba(0, 0, 0, 0.15)'
+          : '0 1px 3px rgba(0, 0, 0, 0.1)',
+        fontSize: '12px',
+        fontWeight: '500',
+        color: '#333333',
+        textShadow: 'none',
+        overflow: 'hidden',
+        userSelect: 'none',
+        transition: isDragging || isResizing ? 'none' : 'box-shadow 0.2s ease',
       }}
       onMouseDown={handleMouseDown}
     >
-      <span style={{fontSize: '0.75em'}}>
-        {getHour(draggingEvent.startDate)}
-      </span>
-      <span style={{fontSize: '0.75em'}}>{getHour(draggingEvent.endDate)}</span>
+      <div
+        style={{
+          fontSize: isLessThen30 ? '11px' : '12px',
+          fontWeight: '500',
+          opacity: 0.95,
+          lineHeight: '1.2',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {isLessThen30 ? (
+          getHour(draggingEvent.startDate) + ' ' + title
+        ) : (
+          <>
+            <div>{`${getHour(draggingEvent.startDate)} - ${getHour(draggingEvent.endDate)} `}</div>
+            <div>{title}</div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
