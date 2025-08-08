@@ -246,6 +246,7 @@ export default class ColumnObserver {
   }
 
   _updateEventsInColumnById(columnId) {
+    console.log(columnId)
     if (!this.columns[columnId]) return;
 
     const groups = this._getOverlappingEventsFromColumn(columnId);
@@ -475,6 +476,15 @@ export default class ColumnObserver {
     if (sourceColumnId) this._updateEventsInColumnById(sourceColumnId);
 
     cb?.(updatedEvent);
+  }
+
+  updateColumnWidth(columnId, newWidth, newLeft) {
+    if (this.columns[columnId]) {
+      this.columns[columnId]._width = newWidth;
+      if (newLeft !== undefined) {
+        this.columns[columnId]._left = newLeft;
+      }
+    }
   }
 
   updateAllColumns() {

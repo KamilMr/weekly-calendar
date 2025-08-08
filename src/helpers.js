@@ -2,6 +2,8 @@ import {
   DEFAULT_START_HOUR,
   DEFAULT_START_MINUTE,
   DEFAULT_DURATION_HOURS,
+  HOUR_LABEL_WIDTH,
+  COLUMN_WIDTH,
 } from './const';
 
 const generateColorFromNumber = number => {
@@ -164,6 +166,16 @@ const detectBorderZone = (e, eventRef, resizeZoneHeight) => {
 const getHour = date =>
   date?.toTimeString().split(' ')[0].split(':').slice(0, 2).join(':');
 
+  // Responsive column width calculation
+  const getResponsiveColumnWidth = (screenWidth, cols) => {
+    if (screenWidth <= 480) {
+      return Math.max(80, (screenWidth - HOUR_LABEL_WIDTH) / cols);
+    } else if (screenWidth <= 768) {
+      return Math.max(90, (screenWidth - HOUR_LABEL_WIDTH) / cols);
+    }
+    return COLUMN_WIDTH;
+  };
+
 export {
   calcDOMElem,
   createInitialEvents,
@@ -173,5 +185,6 @@ export {
   generateColorFromNumber,
   get3CharId,
   getHour,
+  getResponsiveColumnWidth,
   snapToNearestMinutes,
 };

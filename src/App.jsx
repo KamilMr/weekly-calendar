@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 
 import {ColumnObserver} from './engine';
-import {createInitialEvents, dateUtils} from './helpers';
+import {createInitialEvents, dateUtils, getResponsiveColumnWidth} from './helpers';
 import DraggableEvent from './DraggableEvent';
 import {
   NUM_OF_COL,
@@ -24,8 +24,31 @@ const App = ({
   numberOfCols = NUM_OF_COL,
 }) => {
   const [columns, setColumns] = useState([]);
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const columnObserverRef = useRef();
   const columnRefs = useRef([]);
+
+  const responsiveColumnWidth = getResponsiveColumnWidth(screenWidth, numberOfCols);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Update all events when responsive column width changes
+  useEffect(() => {
+    if (columnObserverRef.current && columns.length > 0) {
+      // Update column widths and positions in engine brain
+      columns.forEach((column, index) => {
+        const newLeft = HOUR_LABEL_WIDTH + (index * responsiveColumnWidth);
+        columnObserverRef.current.updateColumnWidth(column.id, responsiveColumnWidth, newLeft);
+      });
+      // Then update all events with new dimensions
+      columnObserverRef.current.updateAllColumns();
+    }
+  }, [responsiveColumnWidth, columns]);
 
   // Initialize ColumnObserver and columns
   useEffect(() => {
@@ -38,8 +61,18 @@ const App = ({
     setColumns(columnRefs.current);
   }, []);
 
+  // Container styles with responsive behavior
+  const containerStyle = {
+    ...(screenWidth <= 768 && {
+      maxWidth: '100vw',
+      overflowX: 'auto',
+      minWidth: `${numberOfCols * responsiveColumnWidth + HOUR_LABEL_WIDTH}px`,
+      WebkitOverflowScrolling: 'touch'
+    })
+  };
+
   return (
-    <div className="container">
+    <div className="container" style={containerStyle}>
       <div
         className="container"
         style={{display: 'flex', flexDirection: 'column'}}
@@ -59,7 +92,7 @@ const App = ({
                 textAlign: 'right',
                 paddingRight: 2,
                 fontWeight: 'bold',
-                width: `${COLUMN_WIDTH}px`,
+                width: `${responsiveColumnWidth}px`,
                 height: '30px',
                 borderBottom: 'none',
               }}
@@ -126,6 +159,9 @@ const App = ({
                 id={`column_${dateUtils.getYYYMMDD(dateUtils.addDayToDate(dateUtils.getStartOfWeek(startDay), idx))}`}
                 className={`box box${idx + 1}`}
                 ref={el => (columnRefs.current[idx] = el)}
+                style={{
+                  width: `${responsiveColumnWidth}px`
+                }}
               />
             ))}
           </div>
@@ -136,7 +172,7 @@ const App = ({
               position: 'absolute',
               left: `${HOUR_LABEL_WIDTH}px`,
               top: 0,
-              width: `${numberOfCols * COLUMN_WIDTH}px`,
+              width: `${numberOfCols * responsiveColumnWidth}px`,
               height: '100%',
               pointerEvents: 'none',
             }}
