@@ -10,6 +10,7 @@ import {
   COLUMN_HEIGHT,
   HOURS_PER_DAY,
   HOUR_HEIGHT,
+  START_DAY_OF_WEEK,
 } from './const';
 
 import './styles.css';
@@ -18,6 +19,8 @@ const App = ({
   events = createInitialEvents(NUM_OF_EVENTS),
   onClick = () => {},
   onGrabEnd = () => {},
+  startDay = START_DAY_OF_WEEK,
+  numberOfCols = NUM_OF_COL,
 }) => {
   const [columns, setColumns] = useState([]);
   const columnObserverRef = useRef();
@@ -25,7 +28,7 @@ const App = ({
 
   // Initialize ColumnObserver and columns
   useEffect(() => {
-    if (columnRefs.current.length !== NUM_OF_COL) return;
+    if (columnRefs.current.length !== numberOfCols) return;
     if (columnObserverRef.current) return;
 
     columnObserverRef.current = new ColumnObserver();
@@ -46,7 +49,7 @@ const App = ({
             className="hour-header"
             style={{width: '60px', height: '30px'}}
           />
-          {Array.from({length: NUM_OF_COL}).map((_, idx) => (
+          {Array.from({length: numberOfCols}).map((_, idx) => (
             <div
               key={`header${idx + 1}`}
               id={`header${idx + 1}`}
@@ -60,7 +63,9 @@ const App = ({
                 borderBottom: 'none',
               }}
             >
-              {dateUtils.getDay(dateUtils.addDayToDate(new Date(), idx))}
+              {dateUtils.getDay(
+                dateUtils.addDayToDate(dateUtils.getStartOfWeek(startDay), idx),
+              )}
             </div>
           ))}
         </div>
@@ -114,10 +119,10 @@ const App = ({
 
           {/* Calendar Columns */}
           <div style={{marginLeft: '60px', display: 'flex'}}>
-            {Array.from({length: NUM_OF_COL}).map((_, idx) => (
+            {Array.from({length: numberOfCols}).map((_, idx) => (
               <div
                 key={`column${idx + 1}`}
-                id={`column_${dateUtils.getYYYMMDD(dateUtils.addDayToDate(new Date(), idx))}`}
+                id={`column_${dateUtils.getYYYMMDD(dateUtils.addDayToDate(dateUtils.getStartOfWeek(startDay), idx))}`}
                 className={`box box${idx + 1}`}
                 ref={el => (columnRefs.current[idx] = el)}
               />
@@ -130,7 +135,7 @@ const App = ({
               position: 'absolute',
               left: '60px',
               top: 0,
-              width: `${NUM_OF_COL * COLUMN_WIDTH}px`,
+              width: `${numberOfCols * COLUMN_WIDTH}px`,
               height: '100%',
               pointerEvents: 'none',
             }}

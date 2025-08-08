@@ -1,4 +1,5 @@
 // Calendar layout constants
+export const START_DAY_OF_WEEK = 1;
 export const NUM_OF_COL = 7;
 export const NUM_OF_EVENTS = 2;
 export const COLUMN_WIDTH = 130;

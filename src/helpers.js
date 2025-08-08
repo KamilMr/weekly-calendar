@@ -79,6 +79,21 @@ date.getYYYMMDD = (newDate = new Date()) => {
   return newDate.toISOString().split('T')[0];
 };
 
+date.getStartOfWeek = (startDay = 1) => {
+  const today = new Date();
+  const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+  // Calculate days to subtract to get to the start day
+  let daysToSubtract = (currentDay - startDay + 7) % 7;
+
+  // If today is the start day, don't subtract anything
+  if (daysToSubtract === 0 && currentDay !== startDay) daysToSubtract = 7;
+
+  const startOfWeek = new Date();
+  startOfWeek.setDate(today.getDate() - daysToSubtract);
+  return startOfWeek;
+};
+
 const get3CharId = () => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   const existingIds = new Set();
