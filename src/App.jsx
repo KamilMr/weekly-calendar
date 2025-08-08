@@ -57,7 +57,15 @@ const App = ({
         </div>
 
         {/* Calendar Columns */}
-        <div className="container" style={{position: 'relative'}}>
+        <div
+          className="container"
+          style={{
+            position: 'relative',
+            minHeight: '900px',
+            height: '900px',
+            overflow: 'auto',
+          }}
+        >
           {Array.from({length: NUM_OF_COL}).map((_, idx) => (
             <div
               key={`column${idx + 1}`}
