@@ -168,10 +168,17 @@ const DraggableEvent = ({
 
         // Calculate constrained position within column boundaries
         const newTop = initialPosition.top + deltaY;
+        const newLeft = initialPosition.left + deltaX;
         const columnHeight = hoveredColumn
           ? hoveredColumn.getBoundingClientRect().height
           : 900;
         const eventHeight = eventRef.current.offsetHeight;
+        const eventWidth = eventRef.current.offsetWidth;
+
+        // Get container bounds for left/right constraints
+        const containerRect =
+          eventRef.current.parentElement.getBoundingClientRect();
+        const columnsAreaWidth = 7 * 130; // 7 columns × 130px each = 910px
 
         // Constrain top position to stay within column bounds
         const constrainedTop = Math.max(
@@ -179,11 +186,19 @@ const DraggableEvent = ({
           Math.min(newTop, columnHeight - eventHeight),
         );
 
+        // Constrain left position to stay within calendar columns area
+        // Left boundary: start of calendar columns (0 relative to columns container)
+        // Right boundary: end of calendar columns area minus event width
+        const constrainedLeft = Math.max(
+          0, // Allow movement to the very left of the calendar columns area
+          Math.min(newLeft, columnsAreaWidth - eventWidth),
+        );
+
         // Update event position through engine, which handles time/date calculations
         columnObserver.updateEvent(
           event.id,
           {
-            left: initialPosition.left + deltaX,
+            left: constrainedLeft,
             top: constrainedTop,
             currentColumnId: hoveredColumn?.id,
           },
