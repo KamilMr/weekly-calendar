@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect, useCallback} from 'react';
+import {useState, useRef, useEffect, useCallback} from 'react';
 import {COLORS} from './engine';
 import {detectBorderZone, detectHoveredColumn, getHour} from './helpers.js';
 import {
@@ -89,10 +89,6 @@ const DraggableEvent = ({
     });
   };
 
-  /**
-   * Handles mouse movement during drag and resize operations
-   * This function is called continuously while the user moves the mouse after initiating a drag or resize
-   */
   const handleMouseMove = useCallback(
     e => {
       // Exit early if not in an active drag or resize operation
@@ -240,10 +236,6 @@ const DraggableEvent = ({
     ],
   );
 
-  /**
-   * Handles mouse up events to finalize drag/resize operations
-   * Called when user releases mouse button, completing the interaction
-   */
   const handleMouseUp = useCallback(() => {
     if (isResizing) {
       // RESIZE COMPLETION: Clean up resize state and finalize position
