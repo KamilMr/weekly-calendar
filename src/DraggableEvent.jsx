@@ -1,9 +1,12 @@
 import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {COLORS} from './engine';
 import {detectBorderZone, detectHoveredColumn, getHour} from './helpers.js';
-
-const DRAG_THRESHOLD = 5;
-const RESIZE_ZONE_HEIGHT = 8;
+import {
+  DRAG_THRESHOLD,
+  RESIZE_ZONE_HEIGHT,
+  MIN_EVENT_HEIGHT,
+  COLUMN_WIDTH,
+} from './const';
 
 const DraggableEvent = ({
   event,
@@ -116,7 +119,7 @@ const DraggableEvent = ({
         }
 
         // Enforce minimum height constraint to prevent events from becoming too small
-        const minHeight = 20;
+        const minHeight = MIN_EVENT_HEIGHT;
         if (newHeight < minHeight) {
           if (resizeMode === 'top')
             newTop = initialPosition.top + (initialHeight - minHeight);
@@ -178,7 +181,7 @@ const DraggableEvent = ({
         // Get container bounds for left/right constraints
         const containerRect =
           eventRef.current.parentElement.getBoundingClientRect();
-        const columnsAreaWidth = 7 * 130; // 7 columns × 130px each = 910px
+        const columnsAreaWidth = 7 * COLUMN_WIDTH; // 7 columns × COLUMN_WIDTH each
 
         // Constrain top position to stay within column bounds
         const constrainedTop = Math.max(

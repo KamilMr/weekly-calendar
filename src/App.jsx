@@ -1,15 +1,11 @@
-import React, {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
-import {ColumnObserver, COLORS} from './engine';
+import {ColumnObserver} from './engine';
 import {createInitialEvents, dateUtils} from './helpers';
 import DraggableEvent from './DraggableEvent';
+import {NUM_OF_COL, NUM_OF_EVENTS, COLUMN_WIDTH, COLUMN_HEIGHT} from './const';
 
 import './styles.css';
-
-const NUM_OF_COL = 7;
-const NUM_OF_EVENTS = 2;
-const COLUMN_WIDTH = 130;
-const COLUMN_HEIGHT = 900;
 
 const App = ({
   events = createInitialEvents(NUM_OF_EVENTS),

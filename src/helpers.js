@@ -1,3 +1,9 @@
+import {
+  DEFAULT_START_HOUR,
+  DEFAULT_START_MINUTE,
+  DEFAULT_DURATION_HOURS,
+} from './const';
+
 const generateColorFromNumber = number => {
   const hue = (number * 137.508) % 360;
   return `hsl(${hue}, 70%, 60%)`;
@@ -8,9 +14,9 @@ const createInitialEvents = num => {
     // Create varied start times throughout the day
     const baseDate = date.addDayToDate(new Date(), idx % 7); // Spread across different days
     // const startHour = 8 + ((idx * 2) % 14); // Hours between 8-22
-    const startHour = 8;
-    const startMinute = 0; //(idx * 15) % 60; // Minutes: 0, 15, 30, 45
-    const durationHours = 1; // + (idx % 3); // Duration: 1, 2, or 3 hours
+    const startHour = DEFAULT_START_HOUR;
+    const startMinute = DEFAULT_START_MINUTE; //(idx * 15) % 60; // Minutes: 0, 15, 30, 45
+    const durationHours = DEFAULT_DURATION_HOURS; // + (idx % 3); // Duration: 1, 2, or 3 hours
 
     const startDate = new Date(baseDate);
     startDate.setHours(startHour, startMinute, 0, 0);

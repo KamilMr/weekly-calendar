@@ -1,0 +1,17 @@
+// Calendar layout constants
+export const NUM_OF_COL = 7;
+export const NUM_OF_EVENTS = 2;
+export const COLUMN_WIDTH = 130;
+export const COLUMN_HEIGHT = 900;
+
+// Drag and drop constants
+export const DRAG_THRESHOLD = 5;
+export const RESIZE_ZONE_HEIGHT = 8;
+
+// Event constants
+export const MIN_EVENT_HEIGHT = 20;
+
+// Time constants
+export const DEFAULT_START_HOUR = 8;
+export const DEFAULT_START_MINUTE = 0;
+export const DEFAULT_DURATION_HOURS = 1;
