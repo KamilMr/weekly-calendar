@@ -11,6 +11,7 @@ import {
   HOURS_PER_DAY,
   HOUR_HEIGHT,
   START_DAY_OF_WEEK,
+  HOUR_LABEL_WIDTH,
 } from './const';
 
 import './styles.css';
@@ -47,7 +48,7 @@ const App = ({
         <div style={{display: 'flex'}}>
           <div
             className="hour-header"
-            style={{width: '60px', height: '30px'}}
+            style={{width: `${HOUR_LABEL_WIDTH}px`, height: '30px'}}
           />
           {Array.from({length: numberOfCols}).map((_, idx) => (
             <div
@@ -84,7 +85,7 @@ const App = ({
           <div
             className="hour-labels"
             style={{
-              width: '60px',
+              width: `${HOUR_LABEL_WIDTH}px`,
               position: 'absolute',
               left: 0,
               top: 0,
@@ -118,7 +119,7 @@ const App = ({
           </div>
 
           {/* Calendar Columns */}
-          <div style={{marginLeft: '60px', display: 'flex'}}>
+          <div style={{marginLeft: `${HOUR_LABEL_WIDTH}px`, display: 'flex'}}>
             {Array.from({length: numberOfCols}).map((_, idx) => (
               <div
                 key={`column${idx + 1}`}
@@ -133,7 +134,7 @@ const App = ({
           <div
             style={{
               position: 'absolute',
-              left: '60px',
+              left: `${HOUR_LABEL_WIDTH}px`,
               top: 0,
               width: `${numberOfCols * COLUMN_WIDTH}px`,
               height: '100%',
@@ -158,13 +159,14 @@ const App = ({
           </div>
 
           {/* Events */}
-          <div style={{marginLeft: '60px'}}>
+          <div style={{marginLeft: `${HOUR_LABEL_WIDTH}px`}}>
             {events.map(event => (
               <DraggableEvent
                 key={event.id}
                 event={event}
                 columnObserver={columnObserverRef.current}
                 columns={columns}
+                numberOfCols={numberOfCols}
                 onEventMove={() => {
                   console.log('onEventMove');
                 }}

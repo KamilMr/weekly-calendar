@@ -14,6 +14,7 @@ const DraggableEvent = ({
   columns,
   onEventMove,
   title = 'Event',
+  numberOfCols = 7,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -181,7 +182,7 @@ const DraggableEvent = ({
         // Get container bounds for left/right constraints
         const containerRect =
           eventRef.current.parentElement.getBoundingClientRect();
-        const columnsAreaWidth = 7 * COLUMN_WIDTH; // 7 columns × COLUMN_WIDTH each
+        const columnsAreaWidth = numberOfCols * COLUMN_WIDTH;
 
         // Constrain top position to stay within column bounds
         const constrainedTop = Math.max(
