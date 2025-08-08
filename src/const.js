@@ -15,3 +15,5 @@ export const MIN_EVENT_HEIGHT = 20;
 export const DEFAULT_START_HOUR = 8;
 export const DEFAULT_START_MINUTE = 0;
 export const DEFAULT_DURATION_HOURS = 1;
+export const HOURS_PER_DAY = 24;
+export const HOUR_HEIGHT = COLUMN_HEIGHT / HOURS_PER_DAY;
