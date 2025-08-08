@@ -8,6 +8,8 @@ import './styles.css';
 
 const NUM_OF_COL = 7;
 const NUM_OF_EVENTS = 2;
+const COLUMN_WIDTH = 130;
+const COLUMN_HEIGHT = 900;
 
 const App = ({
   events = createInitialEvents(NUM_OF_EVENTS),
@@ -46,7 +48,7 @@ const App = ({
                 textAlign: 'right',
                 paddingRight: 2,
                 fontWeight: 'bold',
-                width: '130px',
+                width: `${COLUMN_WIDTH}px`,
                 height: '30px',
                 borderBottom: 'none',
               }}
@@ -61,8 +63,8 @@ const App = ({
           className="container"
           style={{
             position: 'relative',
-            minHeight: '900px',
-            height: '900px',
+            minHeight: `${COLUMN_HEIGHT}px`,
+            height: `${COLUMN_HEIGHT}px`,
             overflow: 'auto',
           }}
         >
