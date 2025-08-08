@@ -3,7 +3,14 @@ import {useEffect, useRef, useState} from 'react';
 import {ColumnObserver} from './engine';
 import {createInitialEvents, dateUtils} from './helpers';
 import DraggableEvent from './DraggableEvent';
-import {NUM_OF_COL, NUM_OF_EVENTS, COLUMN_WIDTH, COLUMN_HEIGHT} from './const';
+import {
+  NUM_OF_COL,
+  NUM_OF_EVENTS,
+  COLUMN_WIDTH,
+  COLUMN_HEIGHT,
+  HOURS_PER_DAY,
+  HOUR_HEIGHT,
+} from './const';
 
 import './styles.css';
 
@@ -35,6 +42,10 @@ const App = ({
       >
         {/* Day Headers */}
         <div style={{display: 'flex'}}>
+          <div
+            className="hour-header"
+            style={{width: '60px', height: '30px'}}
+          />
           {Array.from({length: NUM_OF_COL}).map((_, idx) => (
             <div
               key={`header${idx + 1}`}
@@ -64,27 +75,97 @@ const App = ({
             overflow: 'auto',
           }}
         >
-          {Array.from({length: NUM_OF_COL}).map((_, idx) => (
-            <div
-              key={`column${idx + 1}`}
-              id={`column_${dateUtils.getYYYMMDD(dateUtils.addDayToDate(new Date(), idx))}`}
-              className={`box box${idx + 1}`}
-              ref={el => (columnRefs.current[idx] = el)}
-            />
-          ))}
+          {/* Hour Labels */}
+          <div
+            className="hour-labels"
+            style={{
+              width: '60px',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              height: '100%',
+            }}
+          >
+            {Array.from({length: HOURS_PER_DAY}).map((_, hour) => (
+              <div
+                key={hour}
+                className="hour-label"
+                style={{
+                  height: `${HOUR_HEIGHT}px`,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-end',
+                  paddingRight: '8px',
+                  fontSize: '12px',
+                  color: '#666',
+                  borderRight: '1px solid rgba(0, 0, 0, 0.1)',
+                }}
+              >
+                {hour === 0
+                  ? '12am'
+                  : hour < 12
+                    ? `${hour}am`
+                    : hour === 12
+                      ? '12pm'
+                      : `${hour - 12}pm`}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar Columns */}
+          <div style={{marginLeft: '60px', display: 'flex'}}>
+            {Array.from({length: NUM_OF_COL}).map((_, idx) => (
+              <div
+                key={`column${idx + 1}`}
+                id={`column_${dateUtils.getYYYMMDD(dateUtils.addDayToDate(new Date(), idx))}`}
+                className={`box box${idx + 1}`}
+                ref={el => (columnRefs.current[idx] = el)}
+              />
+            ))}
+          </div>
+
+          {/* Hour Marker Lines */}
+          <div
+            style={{
+              position: 'absolute',
+              left: '60px',
+              top: 0,
+              width: `${NUM_OF_COL * COLUMN_WIDTH}px`,
+              height: '100%',
+              pointerEvents: 'none',
+            }}
+          >
+            {Array.from({length: HOURS_PER_DAY}).map((_, hour) => (
+              <div
+                key={`hour-line-${hour}`}
+                style={{
+                  position: 'absolute',
+                  top: `${hour * HOUR_HEIGHT}px`,
+                  left: 0,
+                  width: '100%',
+                  height: '1px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                  borderTop:
+                    hour === 0 ? 'none' : '1px solid rgba(0, 0, 0, 0.1)',
+                }}
+              />
+            ))}
+          </div>
 
           {/* Events */}
-          {events.map(event => (
-            <DraggableEvent
-              key={event.id}
-              event={event}
-              columnObserver={columnObserverRef.current}
-              columns={columns}
-              onEventMove={() => {
-                console.log('onEventMove');
-              }}
-            />
-          ))}
+          <div style={{marginLeft: '60px'}}>
+            {events.map(event => (
+              <DraggableEvent
+                key={event.id}
+                event={event}
+                columnObserver={columnObserverRef.current}
+                columns={columns}
+                onEventMove={() => {
+                  console.log('onEventMove');
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

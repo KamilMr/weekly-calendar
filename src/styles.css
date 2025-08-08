@@ -41,3 +41,12 @@ body {
 .event:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
+.hour-header {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: none;
+}
+
+.hour-labels {
+  background-color: #f9f9f9;
+}
