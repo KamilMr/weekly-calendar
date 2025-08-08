@@ -6,6 +6,7 @@ import {
   RESIZE_ZONE_HEIGHT,
   MIN_EVENT_HEIGHT,
   COLUMN_WIDTH,
+  HOUR_LABEL_WIDTH,
 } from './const';
 
 const DraggableEvent = ({
@@ -179,11 +180,6 @@ const DraggableEvent = ({
         const eventHeight = eventRef.current.offsetHeight;
         const eventWidth = eventRef.current.offsetWidth;
 
-        // Get container bounds for left/right constraints
-        const containerRect =
-          eventRef.current.parentElement.getBoundingClientRect();
-        const columnsAreaWidth = numberOfCols * COLUMN_WIDTH;
-
         // Constrain top position to stay within column bounds
         const constrainedTop = Math.max(
           0,
@@ -191,11 +187,13 @@ const DraggableEvent = ({
         );
 
         // Constrain left position to stay within calendar columns area
-        // Left boundary: start of calendar columns (0 relative to columns container)
-        // Right boundary: end of calendar columns area minus event width
+        // Events use absolute positioning relative to the main container (includes hour labels)
+        // Left boundary: start of first column (HOUR_LABEL_WIDTH from container edge)
+        // Right boundary: end of last column minus event width
+        const columnsAreaWidth = numberOfCols * COLUMN_WIDTH;
         const constrainedLeft = Math.max(
-          0, // Allow movement to the very left of the calendar columns area
-          Math.min(newLeft, columnsAreaWidth - eventWidth),
+          HOUR_LABEL_WIDTH, // Left edge of first column (after hour labels)
+          Math.min(newLeft, HOUR_LABEL_WIDTH + columnsAreaWidth - eventWidth), // Right edge of columns area minus event width
         );
 
         // Update event position through engine, which handles time/date calculations
