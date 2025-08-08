@@ -166,12 +166,25 @@ const DraggableEvent = ({
         if (!sourceColumnId.current && hoveredColumn)
           sourceColumnId.current = hoveredColumn.id;
 
+        // Calculate constrained position within column boundaries
+        const newTop = initialPosition.top + deltaY;
+        const columnHeight = hoveredColumn
+          ? hoveredColumn.getBoundingClientRect().height
+          : 900;
+        const eventHeight = eventRef.current.offsetHeight;
+
+        // Constrain top position to stay within column bounds
+        const constrainedTop = Math.max(
+          0,
+          Math.min(newTop, columnHeight - eventHeight),
+        );
+
         // Update event position through engine, which handles time/date calculations
         columnObserver.updateEvent(
           event.id,
           {
             left: initialPosition.left + deltaX,
-            top: initialPosition.top + deltaY,
+            top: constrainedTop,
             currentColumnId: hoveredColumn?.id,
           },
           ({left, top, width, startDate, endDate}) => {
