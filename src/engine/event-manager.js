@@ -132,15 +132,30 @@ export default class ColumnObserver {
     const endDate = new Date(startDate);
     endDate.setTime(startDate.getTime() + durationHours * 60 * 60 * 1000);
 
+    // Check if end date is on a different day than start date
+    let finalEndDate = endDate;
+    let finalHeight = height;
+    
+    if (endDate.toDateString() !== startDate.toDateString()) {
+      // Clamp end date to 23:59 of the same day as start date
+      finalEndDate = new Date(startDate);
+      finalEndDate.setHours(23, 59, 59, 999);
+      
+      // Recalculate height based on clamped end date
+      const actualDurationMs = finalEndDate.getTime() - startDate.getTime();
+      const actualDurationHours = actualDurationMs / (60 * 60 * 1000);
+      finalHeight = actualDurationHours * pixelsPerHour;
+    }
+
     // Calculate the corrected top position based on snapped time
     const snappedStartHour = finalStartHour + startMinutes / 60;
     const correctedTop = snappedStartHour * pixelsPerHour;
 
     return {
       startDate,
-      endDate,
+      endDate: finalEndDate,
       top: correctedTop,
-      bottom: correctedTop + height,
+      bottom: correctedTop + finalHeight,
     };
   }
 
@@ -246,7 +261,6 @@ export default class ColumnObserver {
   }
 
   _updateEventsInColumnById(columnId) {
-    console.log(columnId)
     if (!this.columns[columnId]) return;
 
     const groups = this._getOverlappingEventsFromColumn(columnId);
