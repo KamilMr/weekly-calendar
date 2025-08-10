@@ -176,6 +176,34 @@ const getResponsiveColumnWidth = (screenWidth, cols) => {
   return COLUMN_WIDTH;
 };
 
+const getDominantMonthName = datesArray => {
+  if (!Array.isArray(datesArray) || datesArray.length === 0) {
+    throw new Error('datesArray must be a non-empty array');
+  }
+  if (
+    !datesArray.every(
+      date => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date),
+    )
+  ) {
+    throw new Error('All dates must be strings in YYYY-MM-DD format');
+  }
+
+  const dominantMonthIndex = Object.entries(
+    datesArray
+      .map(dateString => dateString.split('-')[1])
+      .reduce((monthCount, monthIndex) => {
+        monthCount[monthIndex] ??= 0;
+        ++monthCount[monthIndex];
+        return monthCount;
+      }, {}),
+  ).sort((a, b) => b[1] - a[1])[0][0];
+
+  return date.getMonth(
+    new Date(new Date().setMonth(+dominantMonthIndex - 1)),
+    'long',
+  );
+};
+
 const generateDatesForCalendar = (startDay, numOfDays, addSub) => {
   if (typeof startDay !== 'number' || startDay < 0 || startDay > 6) {
     throw new Error(
@@ -216,6 +244,7 @@ export {
   detectHoveredColumn,
   generateColorFromNumber,
   generateDatesForCalendar,
+  getDominantMonthName,
   get3CharId,
   getHour,
   getResponsiveColumnWidth,
