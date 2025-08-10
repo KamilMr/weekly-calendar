@@ -1,10 +1,10 @@
 // Calendar layout constants
 export const START_DAY_OF_WEEK = 1;
 export const NUM_OF_COL = 7;
-export const NUM_OF_EVENTS = 2;
+export const NUM_OF_EVENTS = 5;
 export const COLUMN_WIDTH = 130;
 export const COLUMN_HEIGHT = 900;
-export const HOUR_LABEL_WIDTH=64;
+export const HOUR_LABEL_WIDTH = 64;
 
 // Drag and drop constants
 export const DRAG_THRESHOLD = 5;
