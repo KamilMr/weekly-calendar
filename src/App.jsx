@@ -98,141 +98,142 @@ const App = ({
   };
 
   return (
-    <div className="container" style={containerStyle}>
-      <div
-        className="container"
-        style={{display: 'flex', flexDirection: 'column'}}
-      >
-        {/* Navigation and Day Headers */}
-        <div style={{display: 'flex'}}>
-          <WeekNavigation
-            addSub={addSub}
-            onNavigate={setAddSub}
-            width={HOUR_LABEL_WIDTH}
-          />
-          {Array.from({length: numberOfCols}).map((_, idx) => (
-            <div
-              key={`header${idx + 1}`}
-              id={`header${idx + 1}`}
-              className="box"
-              style={{
-                textAlign: 'right',
-                paddingRight: 2,
-                fontWeight: 'bold',
-                width: `${responsiveColumnWidth}px`,
-                height: '30px',
-                borderBottom: 'none',
-              }}
-            >
-              {dateUtils.getDay(new Date(datesForCalendar[idx]))}
-            </div>
-          ))}
-        </div>
-
-        {/* Calendar Columns */}
+    <div>
+      <WeekNavigation addSub={addSub} onNavigate={setAddSub} />
+      <div className="container" style={containerStyle}>
         <div
           className="container"
-          style={{
-            position: 'relative',
-            minHeight: `${COLUMN_HEIGHT}px`,
-            height: `${COLUMN_HEIGHT}px`,
-            overflow: 'auto',
-          }}
+          style={{display: 'flex', flexDirection: 'column'}}
         >
-          {/* Hour Labels */}
-          <div
-            className="hour-labels"
-            style={{
-              width: `${HOUR_LABEL_WIDTH}px`,
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              height: '100%',
-            }}
-          >
-            {Array.from({length: HOURS_PER_DAY}).map((_, hour) => (
+          {/* Navigation and Day Headers */}
+          <div style={{display: 'flex'}}>
+            {/* Empty box  */}
+            <div style={{width: HOUR_LABEL_WIDTH + 'px'}} />
+            {/* Top labels */}
+            {Array.from({length: numberOfCols}).map((_, idx) => (
               <div
-                key={hour}
-                className="hour-label"
+                key={`header${idx + 1}`}
+                id={`header${idx + 1}`}
+                className="box"
                 style={{
-                  height: `${HOUR_HEIGHT}px`,
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'flex-end',
-                  paddingRight: '8px',
-                  fontSize: '12px',
-                  color: '#666',
-                  borderRight: '1px solid rgba(0, 0, 0, 0.1)',
+                  textAlign: 'right',
+                  paddingRight: 2,
+                  fontWeight: 'bold',
+                  width: `${responsiveColumnWidth}px`,
+                  height: '30px',
+                  borderBottom: 'none',
                 }}
               >
-                {hour === 0
-                  ? '12am'
-                  : hour < 12
-                    ? `${hour}am`
-                    : hour === 12
-                      ? '12pm'
-                      : `${hour - 12}pm`}
+                {dateUtils.getDay(new Date(datesForCalendar[idx]))}
               </div>
             ))}
           </div>
 
           {/* Calendar Columns */}
-          <div style={{marginLeft: `${HOUR_LABEL_WIDTH}px`, display: 'flex'}}>
-            {Array.from({length: numberOfCols}).map((_, idx) => (
-              <div
-                key={`column${idx + 1}`}
-                id={`column_${datesForCalendar[idx]}`}
-                className={`box box${idx + 1}`}
-                ref={el => (columnRefs.current[idx] = el)}
-                style={{
-                  width: `${responsiveColumnWidth}px`,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Hour Marker Lines */}
           <div
+            className="container"
             style={{
-              position: 'absolute',
-              left: `${HOUR_LABEL_WIDTH}px`,
-              top: 0,
-              width: `${numberOfCols * responsiveColumnWidth}px`,
-              height: '100%',
-              pointerEvents: 'none',
+              position: 'relative',
+              minHeight: `${COLUMN_HEIGHT}px`,
+              height: `${COLUMN_HEIGHT}px`,
+              overflow: 'auto',
             }}
           >
-            {Array.from({length: HOURS_PER_DAY}).map((_, hour) => (
-              <div
-                key={`hour-line-${hour}`}
-                style={{
-                  position: 'absolute',
-                  top: `${hour * HOUR_HEIGHT}px`,
-                  left: 0,
-                  width: '100%',
-                  height: '1px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                  borderTop:
-                    hour === 0 ? 'none' : '1px solid rgba(0, 0, 0, 0.1)',
-                }}
-              />
-            ))}
-          </div>
+            {/* Hour Labels */}
+            <div
+              className="hour-labels"
+              style={{
+                width: `${HOUR_LABEL_WIDTH}px`,
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+              }}
+            >
+              {Array.from({length: HOURS_PER_DAY}).map((_, hour) => (
+                <div
+                  key={hour}
+                  className="hour-label"
+                  style={{
+                    height: `${HOUR_HEIGHT}px`,
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'flex-end',
+                    paddingRight: '8px',
+                    fontSize: '12px',
+                    color: '#666',
+                    borderRight: '1px solid rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  {hour === 0
+                    ? '12am'
+                    : hour < 12
+                      ? `${hour}am`
+                      : hour === 12
+                        ? '12pm'
+                        : `${hour - 12}pm`}
+                </div>
+              ))}
+            </div>
 
-          {/* Events */}
-          <div style={{marginLeft: `${HOUR_LABEL_WIDTH}px`}}>
-            {filteredEvents.map(event => (
-              <DraggableEvent
-                key={event.id}
-                event={event}
-                columnObserver={columnObserverRef.current}
-                columns={columns}
-                numberOfCols={numberOfCols}
-                onEventMove={() => {
-                  console.log('onEventMove');
-                }}
-              />
-            ))}
+            {/* Calendar Columns */}
+            <div style={{marginLeft: `${HOUR_LABEL_WIDTH}px`, display: 'flex'}}>
+              {Array.from({length: numberOfCols}).map((_, idx) => (
+                <div
+                  key={`column${idx + 1}`}
+                  id={`column_${datesForCalendar[idx]}`}
+                  className={`box box${idx + 1}`}
+                  ref={el => (columnRefs.current[idx] = el)}
+                  style={{
+                    width: `${responsiveColumnWidth}px`,
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Hour Marker Lines */}
+            <div
+              style={{
+                position: 'absolute',
+                left: `${HOUR_LABEL_WIDTH}px`,
+                top: 0,
+                width: `${numberOfCols * responsiveColumnWidth}px`,
+                height: '100%',
+                pointerEvents: 'none',
+              }}
+            >
+              {Array.from({length: HOURS_PER_DAY}).map((_, hour) => (
+                <div
+                  key={`hour-line-${hour}`}
+                  style={{
+                    position: 'absolute',
+                    top: `${hour * HOUR_HEIGHT}px`,
+                    left: 0,
+                    width: '100%',
+                    height: '1px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                    borderTop:
+                      hour === 0 ? 'none' : '1px solid rgba(0, 0, 0, 0.1)',
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Events */}
+            <div style={{marginLeft: `${HOUR_LABEL_WIDTH}px`}}>
+              {filteredEvents.map(event => (
+                <DraggableEvent
+                  key={event.id}
+                  event={event}
+                  columnObserver={columnObserverRef.current}
+                  columns={columns}
+                  numberOfCols={numberOfCols}
+                  onEventMove={() => {
+                    console.log('onEventMove');
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>

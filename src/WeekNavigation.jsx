@@ -1,12 +1,21 @@
-const WeekNavigation = ({addSub, onNavigate, width = 60}) => {
+const WeekNavigation = ({
+  text = '',
+  addSub,
+  onNavigate,
+  style = {
+    root: {},
+  },
+}) => {
   return (
     <div
       style={{
-        width: `${width}px`,
+        padding: 24,
+        width: 300,
         height: '30px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
+        ...style.root,
       }}
     >
       <button
@@ -15,20 +24,21 @@ const WeekNavigation = ({addSub, onNavigate, width = 60}) => {
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          fontSize: '16px',
+          fontSize: '1.8em',
           padding: '4px',
           marginRight: '4px',
         }}
       >
         ←
       </button>
+      <h6>{text}</h6>
       <button
         onClick={() => onNavigate(addSub + 1)}
         style={{
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          fontSize: '16px',
+          fontSize: '1.8em',
           padding: '4px',
         }}
       >
