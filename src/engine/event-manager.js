@@ -135,12 +135,12 @@ export default class ColumnObserver {
     // Check if end date is on a different day than start date
     let finalEndDate = endDate;
     let finalHeight = height;
-    
+
     if (endDate.toDateString() !== startDate.toDateString()) {
       // Clamp end date to 23:59 of the same day as start date
       finalEndDate = new Date(startDate);
       finalEndDate.setHours(23, 59, 59, 999);
-      
+
       // Recalculate height based on clamped end date
       const actualDurationMs = finalEndDate.getTime() - startDate.getTime();
       const actualDurationHours = actualDurationMs / (60 * 60 * 1000);
@@ -277,7 +277,13 @@ export default class ColumnObserver {
   }
 
   // Public methods
+  clearColumns() {
+    this.columns = {};
+    this.overlappedEvents = {};
+  }
+
   registerColumns(columns) {
+    this.clearColumns();
     columns.forEach(column => this._registerColumn(calcDOMElem(column)));
   }
 
