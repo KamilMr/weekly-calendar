@@ -74,16 +74,18 @@ const App = ({
     }
   }, [responsiveColumnWidth, columns]);
 
-  // Initialize ColumnObserver and columns
+  // Initialize ColumnObserver and columns - reinitialize when dates change
   useEffect(() => {
     if (columnRefs.current.length !== numberOfCols) return;
-    if (columnObserverRef.current) return;
 
-    columnObserverRef.current = new ColumnObserver();
+    if (!columnObserverRef.current) {
+      columnObserverRef.current = new ColumnObserver();
+    }
+
+    // Clear and re-register columns when dates change
     columnObserverRef.current.registerColumns(columnRefs.current);
-
     setColumns(columnRefs.current);
-  }, []);
+  }, [datesForCalendar.join(','), numberOfCols]);
 
   // Container styles with responsive behavior
   const containerStyle = {
