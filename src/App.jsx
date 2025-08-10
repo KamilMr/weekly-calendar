@@ -5,6 +5,7 @@ import {
   createInitialEvents,
   dateUtils,
   generateDatesForCalendar,
+  getDominantMonthName,
   getResponsiveColumnWidth,
 } from './helpers';
 import DraggableEvent from './DraggableEvent';
@@ -97,9 +98,15 @@ const App = ({
     }),
   };
 
+  const currentMonthName = getDominantMonthName(datesForCalendar);
+
   return (
     <div>
-      <WeekNavigation addSub={addSub} onNavigate={setAddSub} />
+      <WeekNavigation
+        addSub={addSub}
+        onNavigate={setAddSub}
+        text={currentMonthName}
+      />
       <div className="container" style={containerStyle}>
         <div
           className="container"
