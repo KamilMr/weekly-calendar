@@ -8,6 +8,7 @@ import {
   getResponsiveColumnWidth,
 } from './helpers';
 import DraggableEvent from './DraggableEvent';
+import WeekNavigation from './WeekNavigation';
 import {
   NUM_OF_COL,
   NUM_OF_EVENTS,
@@ -30,6 +31,7 @@ const App = ({
 }) => {
   const [columns, setColumns] = useState([]);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [addSub, setAddSub] = useState(0);
   const columnObserverRef = useRef();
   const columnRefs = useRef([]);
 
@@ -38,7 +40,11 @@ const App = ({
     numberOfCols,
   );
 
-  const datesForCalendar = generateDatesForCalendar(startDay, numberOfCols, 1);
+  const datesForCalendar = generateDatesForCalendar(
+    startDay,
+    numberOfCols,
+    addSub,
+  );
   const filteredEvents = events.filter(event => {
     const eventDate = dateUtils.getYYYMMDD(event.startDate);
     return datesForCalendar.includes(eventDate);
@@ -95,11 +101,12 @@ const App = ({
         className="container"
         style={{display: 'flex', flexDirection: 'column'}}
       >
-        {/* Day Headers */}
+        {/* Navigation and Day Headers */}
         <div style={{display: 'flex'}}>
-          <div
-            className="hour-header"
-            style={{width: `${HOUR_LABEL_WIDTH}px`, height: '30px'}}
+          <WeekNavigation
+            addSub={addSub}
+            onNavigate={setAddSub}
+            width={HOUR_LABEL_WIDTH}
           />
           {Array.from({length: numberOfCols}).map((_, idx) => (
             <div
