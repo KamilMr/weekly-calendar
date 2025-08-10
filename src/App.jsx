@@ -1,7 +1,11 @@
 import {useEffect, useRef, useState} from 'react';
 
 import {ColumnObserver} from './engine';
-import {createInitialEvents, dateUtils, getResponsiveColumnWidth} from './helpers';
+import {
+  createInitialEvents,
+  dateUtils,
+  getResponsiveColumnWidth,
+} from './helpers';
 import DraggableEvent from './DraggableEvent';
 import {
   NUM_OF_COL,
@@ -28,7 +32,11 @@ const App = ({
   const columnObserverRef = useRef();
   const columnRefs = useRef([]);
 
-  const responsiveColumnWidth = getResponsiveColumnWidth(screenWidth, numberOfCols);
+  const responsiveColumnWidth = getResponsiveColumnWidth(
+    screenWidth,
+    numberOfCols,
+  );
+  console.log(responsiveColumnWidth);
 
   // Handle window resize
   useEffect(() => {
@@ -42,8 +50,12 @@ const App = ({
     if (columnObserverRef.current && columns.length > 0) {
       // Update column widths and positions in engine brain
       columns.forEach((column, index) => {
-        const newLeft = HOUR_LABEL_WIDTH + (index * responsiveColumnWidth);
-        columnObserverRef.current.updateColumnWidth(column.id, responsiveColumnWidth, newLeft);
+        const newLeft = HOUR_LABEL_WIDTH + index * responsiveColumnWidth;
+        columnObserverRef.current.updateColumnWidth(
+          column.id,
+          responsiveColumnWidth,
+          newLeft,
+        );
       });
       // Then update all events with new dimensions
       columnObserverRef.current.updateAllColumns();
@@ -67,8 +79,8 @@ const App = ({
       maxWidth: '100vw',
       overflowX: 'auto',
       minWidth: `${numberOfCols * responsiveColumnWidth + HOUR_LABEL_WIDTH}px`,
-      WebkitOverflowScrolling: 'touch'
-    })
+      WebkitOverflowScrolling: 'touch',
+    }),
   };
 
   return (
@@ -160,7 +172,7 @@ const App = ({
                 className={`box box${idx + 1}`}
                 ref={el => (columnRefs.current[idx] = el)}
                 style={{
-                  width: `${responsiveColumnWidth}px`
+                  width: `${responsiveColumnWidth}px`,
                 }}
               />
             ))}
