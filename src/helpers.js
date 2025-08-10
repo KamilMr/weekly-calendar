@@ -166,15 +166,47 @@ const detectBorderZone = (e, eventRef, resizeZoneHeight) => {
 const getHour = date =>
   date?.toTimeString().split(' ')[0].split(':').slice(0, 2).join(':');
 
-  // Responsive column width calculation
-  const getResponsiveColumnWidth = (screenWidth, cols) => {
-    if (screenWidth <= 480) {
-      return Math.max(80, (screenWidth - HOUR_LABEL_WIDTH) / cols);
-    } else if (screenWidth <= 768) {
-      return Math.max(90, (screenWidth - HOUR_LABEL_WIDTH) / cols);
-    }
-    return COLUMN_WIDTH;
-  };
+// Responsive column width calculation
+const getResponsiveColumnWidth = (screenWidth, cols) => {
+  if (screenWidth <= 480) {
+    return Math.max(80, (screenWidth - HOUR_LABEL_WIDTH) / cols);
+  } else if (screenWidth <= 768) {
+    return Math.max(90, (screenWidth - HOUR_LABEL_WIDTH) / cols);
+  }
+  return COLUMN_WIDTH;
+};
+
+const generateDatesForCalendar = (startDay, numOfDays, addSub) => {
+  if (typeof startDay !== 'number' || startDay < 0 || startDay > 6) {
+    throw new Error(
+      'startDay must be a number between 0 (Sunday) and 6 (Saturday)',
+    );
+  }
+  if (typeof numOfDays !== 'number' || numOfDays <= 0) {
+    throw new Error('numOfDays must be a positive number');
+  }
+  if (typeof addSub !== 'number') {
+    throw new Error('addSub must be a number');
+  }
+
+  const today = new Date();
+  const currentDay = today.getDay();
+
+  let daysToSubtract = (currentDay - startDay + 7) % 7;
+  daysToSubtract += addSub * -1 * 7;
+
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - daysToSubtract);
+
+  const dates = [];
+  for (let i = 0; i < numOfDays; i++) {
+    const currentDate = new Date(startOfWeek);
+    currentDate.setDate(startOfWeek.getDate() + i);
+    dates.push(date.getYYYMMDD(currentDate));
+  }
+
+  return dates;
+};
 
 export {
   calcDOMElem,
@@ -183,6 +215,7 @@ export {
   detectBorderZone,
   detectHoveredColumn,
   generateColorFromNumber,
+  generateDatesForCalendar,
   get3CharId,
   getHour,
   getResponsiveColumnWidth,

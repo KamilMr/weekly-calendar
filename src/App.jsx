@@ -4,6 +4,7 @@ import {ColumnObserver} from './engine';
 import {
   createInitialEvents,
   dateUtils,
+  generateDatesForCalendar,
   getResponsiveColumnWidth,
 } from './helpers';
 import DraggableEvent from './DraggableEvent';
@@ -36,7 +37,12 @@ const App = ({
     screenWidth,
     numberOfCols,
   );
-  console.log(responsiveColumnWidth);
+
+  const datesForCalendar = generateDatesForCalendar(startDay, numberOfCols, 1);
+  const filteredEvents = events.filter(event => {
+    const eventDate = dateUtils.getYYYMMDD(event.startDate);
+    return datesForCalendar.includes(eventDate);
+  });
 
   // Handle window resize
   useEffect(() => {
@@ -109,9 +115,7 @@ const App = ({
                 borderBottom: 'none',
               }}
             >
-              {dateUtils.getDay(
-                dateUtils.addDayToDate(dateUtils.getStartOfWeek(startDay), idx),
-              )}
+              {dateUtils.getDay(new Date(datesForCalendar[idx]))}
             </div>
           ))}
         </div>
@@ -168,7 +172,7 @@ const App = ({
             {Array.from({length: numberOfCols}).map((_, idx) => (
               <div
                 key={`column${idx + 1}`}
-                id={`column_${dateUtils.getYYYMMDD(dateUtils.addDayToDate(dateUtils.getStartOfWeek(startDay), idx))}`}
+                id={`column_${datesForCalendar[idx]}`}
                 className={`box box${idx + 1}`}
                 ref={el => (columnRefs.current[idx] = el)}
                 style={{
@@ -208,7 +212,7 @@ const App = ({
 
           {/* Events */}
           <div style={{marginLeft: `${HOUR_LABEL_WIDTH}px`}}>
-            {events.map(event => (
+            {filteredEvents.map(event => (
               <DraggableEvent
                 key={event.id}
                 event={event}
