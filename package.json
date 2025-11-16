@@ -11,7 +11,7 @@
   "description": "Weekly calendar",
   "homepage": "https://github.com/KamilMr/weekly-calendar#readme",
   "scripts": {
-    "dev": "concurrently --names \"VITE,PRETTIER\" --prefix-colors \"cyan,magenta\" \"vite\" \"pnpm format:watch\"",
+    "dev": "concurrently --names \"VITE,PRETTIER\" --prefix-colors \"cyan,magenta\" \"vite --host\" \"pnpm format:watch\"",
     "dev:only": "vite",
     "build": "vite build",
     "preview": "vite preview",
